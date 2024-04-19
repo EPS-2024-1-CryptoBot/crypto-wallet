@@ -1,3 +1,10 @@
+venv
+deps
+.terraform
+lambda_function.zip
+.DS_Store
+.secrets
+
 # Logs
 logs
 *.log
