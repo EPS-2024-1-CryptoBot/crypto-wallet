@@ -1,0 +1,11 @@
+services:
+  wallet_api:
+    container_name: wallet_api
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    volumes:
+      - ./wallet:/app
+    ports:
+      - "8000:8000"
+    tty: true
