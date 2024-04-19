@@ -16,8 +16,8 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          apt-get update
-          apt-get -y install make
+          sudo apt-get update
+          sudo apt-get -y install make
 
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v2
