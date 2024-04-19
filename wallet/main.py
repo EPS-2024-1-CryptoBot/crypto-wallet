@@ -1,6 +1,5 @@
 from fastapi import FastAPI
 from mangum import Mangum
-import uvicorn
 
 app = FastAPI()
 handler = Mangum(app)
@@ -17,8 +16,9 @@ def search(query: str):
     return {"Search": "You searched for {query}".format(query=query)}
 
 @app.get("/home")
-def search(query: str):
+def home():
     return {"Welcome Home!": "You are always welcome here."}
 
 if __name__ == "__main__":
+    import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000, log_level="info")
