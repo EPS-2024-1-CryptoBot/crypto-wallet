@@ -11,11 +11,23 @@ END = \033[0m
 
 help:
 	@echo "$(YELLOW)# ------------------- Makefile commands ------------------- #$(END)"
-	@echo "$(CYAN)dev$(END):		Runs run-dev starting $(UNDERLINE)main.py$(END)."
-	@echo "$(CYAN)clean-build$(END):	Removes the 'deps' directory and the 'lambda_function.zip' file."
-	@echo "$(CYAN)build-dev$(END):	Builds the project using Docker."
-	@echo "$(CYAN)run-dev$(END):	Runs dev environment."
-	@echo "$(CYAN)prune$(END):		Stops all containers and prunes docker."
+	@echo "$(CYAN)help$(END):				Shows this message."
+	@echo "$(CYAN)clean-build$(END):			Removes the 'deps' directory and the 'lambda_function.zip' file."
+	@echo "$(CYAN)prune$(END):				Stops all containers and prunes docker."
+	@echo ""
+	@echo "$(GREEN)@ DEV$(END)"
+	@echo "$(CYAN)dev$(END):				Runs run-dev starting $(UNDERLINE)main.py$(END)."
+	@echo "$(CYAN)dev-ports$(END):			Shows localhost port bindings."
+	@echo "$(CYAN)build-dev$(END):			Builds the project using Docker."
+	@echo "$(CYAN)run-dev$(END):			Runs dev environment."
+	@echo ""
+	@echo "$(RED)@ PROD$(END)"
+	@echo "$(CYAN)prod-build-deps$(END):		Installs depencendies into ./deps directory."
+	@echo "$(CYAN)zip$(END):				Zips dependencies for lambda function."
+	@echo "$(CYAN)aws-config$(END):			Configures AWS credentials using AWS CLI."
+	@echo "$(CYAN)tf-init$(END):			Initializes terraform backend."
+	@echo "$(CYAN)tf-plan$(END):			Shows terraform modifications."
+	@echo "$(CYAN)tf-apply$(END):			Applies terraform infrastructure changes."
 
 ###########################################################
 # PRODUCTION
@@ -30,6 +42,7 @@ zip:
 # DEV
 dev:
 	docker-compose -f docker-compose.dev.yaml --env-file ./dev.env up -d --force-recreate
+	$(MAKE) dev-ports
 	docker exec -it wallet_api python main.py
 clean-build:
 	rm -rf ./deps
@@ -38,7 +51,11 @@ build-dev:
 	docker-compose -f docker-compose.dev.yaml --env-file ./dev.env build
 run-dev:
 	docker-compose -f docker-compose.dev.yaml --env-file ./dev.env up -d
+	$(MAKE) dev-ports
 	docker exec -it wallet_api bash
+dev-ports:
+	@echo "$(GREEN)Mongo-Express at $(UNDERLINE)http://localhost:8081$(END)"
+	@echo "$(GREEN)WalletAPI at $(UNDERLINE)http://localhost:8000$(END)"
 prune:
 	docker stop $$(docker ps -a -q)
 	docker system prune -a -f
