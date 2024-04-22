@@ -21,7 +21,7 @@ jobs:
 
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v2
-        environment:
+        env:
           TF_VAR_MONGO_URI: ${{ secrets.MONGO_URI }}
           TF_VAR_environment: prod
 
