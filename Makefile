@@ -23,6 +23,7 @@ help:
 	@echo ""
 	@echo "$(RED)@ PROD$(END)"
 	@echo "$(CYAN)prod-build-deps$(END):		Installs depencendies into ./deps directory."
+	@echo "$(CYAN)build-local$(END):			Installs depencendies into ./deps directory using Docker."
 	@echo "$(CYAN)zip$(END):				Zips dependencies for lambda function."
 	@echo "$(CYAN)aws-config$(END):			Configures AWS credentials using AWS CLI."
 	@echo "$(CYAN)tf-init$(END):			Initializes terraform backend."
@@ -33,6 +34,11 @@ help:
 # PRODUCTION
 prod-build-deps:
 	pip install -t ./deps -r requirements.txt
+build-local:
+	docker build -t wallet_api -f Dockerfile.prod .
+	docker create --name api_zip wallet_api
+	docker cp api_zip:/app/deps ./deps
+	docker rm api_zip
 zip:
 	cd deps && zip ../lambda_function.zip -r .
 	cd wallet && zip ../lambda_function.zip -u ./*
