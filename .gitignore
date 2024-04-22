@@ -6,6 +6,7 @@ lambda_function.zip
 .secrets
 .terraform.lock.hcl
 *.env
+terraform.tfvars
 
 # Logs
 logs

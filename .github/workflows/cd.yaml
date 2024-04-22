@@ -21,6 +21,9 @@ jobs:
 
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v2
+        environment:
+          TF_VAR_MONGO_URI: ${{ secrets.MONGO_URI }}
+          TF_VAR_environment: prod
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
