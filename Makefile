@@ -1,3 +1,22 @@
+PURPLE = \033[95m
+CYAN = \033[96m
+DARKCYAN = \033[36m
+BLUE = \033[94m
+GREEN = \033[92m
+YELLOW = \033[93m
+RED = \033[91m
+BOLD = \033[1m
+UNDERLINE = \033[4m
+END = \033[0m
+
+help:
+	@echo "$(YELLOW)# ------------------- Makefile commands ------------------- #$(END)"
+	@echo "$(CYAN)dev$(END):		Runs run-dev starting $(UNDERLINE)main.py$(END)."
+	@echo "$(CYAN)clean-build$(END):	Removes the 'deps' directory and the 'lambda_function.zip' file."
+	@echo "$(CYAN)build-dev$(END):	Builds the project using Docker."
+	@echo "$(CYAN)run-dev$(END):	Runs dev environment."
+	@echo "$(CYAN)prune$(END):		Stops all containers and prunes docker."
+
 ###########################################################
 # PRODUCTION
 prod-build-deps:
@@ -9,19 +28,20 @@ zip:
 
 ###########################################################
 # DEV
-build-dev: build-requirements zip
-
+dev:
+	docker-compose -f docker-compose.dev.yaml --env-file ./dev.env up -d --force-recreate
+	docker exec -it wallet_api python main.py
 clean-build:
 	rm -rf ./deps
 	rm -rf ./lambda_function.zip
-build-requirements:
-	docker build -t zip-build-lambda -f Dockerfile.prod .
-	docker create --name zip-build zip-build-lambda
-	docker cp zip-build:/app/deps .
-	docker remove zip-build
+build-dev:
+	docker-compose -f docker-compose.dev.yaml --env-file ./dev.env build
 run-dev:
-	docker-compose -f docker-compose.dev.yaml up -d
-	docker exec -it wallet_api python main.py
+	docker-compose -f docker-compose.dev.yaml --env-file ./dev.env up -d
+	docker exec -it wallet_api bash
+prune:
+	docker stop $$(docker ps -a -q)
+	docker system prune -a -f
 
 
 ###########################################################
