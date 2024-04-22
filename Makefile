@@ -1,3 +1,34 @@
+PURPLE = \033[95m
+CYAN = \033[96m
+DARKCYAN = \033[36m
+BLUE = \033[94m
+GREEN = \033[92m
+YELLOW = \033[93m
+RED = \033[91m
+BOLD = \033[1m
+UNDERLINE = \033[4m
+END = \033[0m
+
+help:
+	@echo "$(YELLOW)# ------------------- Makefile commands ------------------- #$(END)"
+	@echo "$(CYAN)help$(END):				Shows this message."
+	@echo "$(CYAN)clean-build$(END):			Removes the 'deps' directory and the 'lambda_function.zip' file."
+	@echo "$(CYAN)prune$(END):				Stops all containers and prunes docker."
+	@echo ""
+	@echo "$(GREEN)@ DEV$(END)"
+	@echo "$(CYAN)dev$(END):				Runs run-dev starting $(UNDERLINE)main.py$(END)."
+	@echo "$(CYAN)dev-ports$(END):			Shows localhost port bindings."
+	@echo "$(CYAN)build-dev$(END):			Builds the project using Docker."
+	@echo "$(CYAN)run-dev$(END):			Runs dev environment."
+	@echo ""
+	@echo "$(RED)@ PROD$(END)"
+	@echo "$(CYAN)prod-build-deps$(END):		Installs depencendies into ./deps directory."
+	@echo "$(CYAN)zip$(END):				Zips dependencies for lambda function."
+	@echo "$(CYAN)aws-config$(END):			Configures AWS credentials using AWS CLI."
+	@echo "$(CYAN)tf-init$(END):			Initializes terraform backend."
+	@echo "$(CYAN)tf-plan$(END):			Shows terraform modifications."
+	@echo "$(CYAN)tf-apply$(END):			Applies terraform infrastructure changes."
+
 ###########################################################
 # PRODUCTION
 prod-build-deps:
@@ -9,19 +40,25 @@ zip:
 
 ###########################################################
 # DEV
-build-dev: build-requirements zip
-
+dev:
+	docker-compose -f docker-compose.dev.yaml --env-file ./dev.env up -d --force-recreate
+	$(MAKE) dev-ports
+	docker exec -it wallet_api python main.py
 clean-build:
 	rm -rf ./deps
 	rm -rf ./lambda_function.zip
-build-requirements:
-	docker build -t zip-build-lambda -f Dockerfile.prod .
-	docker create --name zip-build zip-build-lambda
-	docker cp zip-build:/app/deps .
-	docker remove zip-build
+build-dev:
+	docker-compose -f docker-compose.dev.yaml --env-file ./dev.env build
 run-dev:
-	docker-compose -f docker-compose.dev.yaml up -d
-	docker exec -it wallet_api python main.py
+	docker-compose -f docker-compose.dev.yaml --env-file ./dev.env up -d
+	$(MAKE) dev-ports
+	docker exec -it wallet_api bash
+dev-ports:
+	@echo "$(GREEN)Mongo-Express at $(UNDERLINE)http://localhost:8081$(END)"
+	@echo "$(GREEN)WalletAPI at $(UNDERLINE)http://localhost:8000$(END)"
+prune:
+	docker stop $$(docker ps -a -q)
+	docker system prune -a -f
 
 
 ###########################################################

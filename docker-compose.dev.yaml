@@ -1,4 +1,5 @@
 services:
+
   wallet_api:
     container_name: wallet_api
     build:
@@ -8,4 +9,18 @@ services:
       - ./wallet:/app
     ports:
       - "8000:8000"
+    depends_on:
+      - mongo
     tty: true
+      
+  mongo:
+    image: mongo@sha256:4e6a14311567d04fab842b9df6d2b88b8425362632f262da208c97af167df93c
+    ports:
+      - 27017:27017
+
+  mongo-express:
+    image: mongo-express:latest
+    ports:
+      - 8081:8081
+    environment:
+      - ME_CONFIG_BASICAUTH=false
