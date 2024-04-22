@@ -26,9 +26,9 @@ def home():
     return {"Welcome Home!": "You are always welcome here."}
 
 @app.post("/upload")
-async def upload(user: User):
+def upload(user: User):
     db = MongoConnector()
-    await db.insert_data(dict(user))
+    db.insert_data(dict(user))
     return {"status": 200, "message": "Data uploaded successfully!", "data": user}
 
 if __name__ == "__main__":

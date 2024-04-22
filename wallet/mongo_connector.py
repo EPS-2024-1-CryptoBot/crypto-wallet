@@ -1,9 +1,7 @@
 from pymongo import MongoClient
-from dotenv import load_dotenv
-load_dotenv('../dev.env')
 
 class MongoConnector():
-	def __init__(self, connection_string='mongodb://wallet:pass@mongo:27017/'):
+	def __init__(self, connection_string='mongodb://mongo:27017/'):
 
 		self.connection_string = connection_string
 		self.connect()
@@ -17,9 +15,6 @@ class MongoConnector():
 		print(f"SUCCESSFULLY CONNECTED TO MONGODB AT {self.connection_string}")
 
 	def insert_data(self, document):
-		# print(document['date'])
-		# existing_docs = self.retrieve_data(_filter={'date': document['date']})
-		# print(existing_docs)
 		self.collection.insert_one(document)
 		print(f"SUCCESSFULLY INSERTED DOCUMENT INTO MONGODB IN COLLECTION {self.collection}")
 
