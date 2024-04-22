@@ -1,10 +1,10 @@
 name: Deploy Wallet API
 
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch:
+  # push:
+  #   branches:
+  #     - main
 
 jobs:
   deploy:
