@@ -20,6 +20,7 @@ help:
 	@echo "$(CYAN)dev-ports$(END):			Shows localhost port bindings."
 	@echo "$(CYAN)build-dev$(END):			Builds the project using Docker."
 	@echo "$(CYAN)run-dev$(END):			Runs dev environment."
+	@echo "$(CYAN)tf-apply-dev$(END):			Applies terraform infrastructure changes with $(UNDERLINE)terraform.tfvars$(END) file."
 	@echo ""
 	@echo "$(RED)@ PROD$(END)"
 	@echo "$(CYAN)prod-build-deps$(END):		Installs depencendies into ./deps directory."
@@ -82,3 +83,5 @@ tf-plan:
 	cd terraform && $(MAKE) plan
 tf-apply:
 	cd terraform && $(MAKE) apply
+tf-apply-dev:
+	cd terraform && $(MAKE) apply-dev
