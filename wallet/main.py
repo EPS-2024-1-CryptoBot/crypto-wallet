@@ -3,6 +3,8 @@ from pydantic import BaseModel
 from mangum import Mangum
 from mongo_connector import MongoConnector
 import os
+import requests
+import json
 
 app = FastAPI()
 handler = Mangum(app)
@@ -26,11 +28,24 @@ def search(query: str):
 def home():
     return {"Welcome Home!": "You are always welcome here."}
 
+@app.get("/google")
+def google():
+    url = "https://google.com.br"
+    r = requests.get(url)
+    print("html:", r. text)
+    return {
+        'statusCode': 200,
+        'body': json.dumps ('Hello from Lambda!')
+    }
+
 @app.post("/upload")
 def upload(user: User):
+    print(user)
     db = MongoConnector(os.environ.get("MONGO_URI"))
+    dados = dict(user)
     db.insert_data(dict(user))
-    return {"status": 200, "message": "Data uploaded successfully!", "data": user}
+    # return {"status": 200}
+    return {"status": 200, "message": "Data uploaded successfully!", "data": dados}
 
 if __name__ == "__main__":
     import uvicorn
