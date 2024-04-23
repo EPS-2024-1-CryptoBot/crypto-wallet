@@ -10,9 +10,9 @@ class MongoConnector():
 		self.collection = self.db['user_events']
 
 	def connect(self):
-		print(f"ATTEMPTING TO CONNECT TO MONGODB AT {self.connection_string}")
+		print(f"ATTEMPTING TO CONNECT TO MONGODB")
 		self.client = MongoClient(self.connection_string)
-		print(f"SUCCESSFULLY CONNECTED TO MONGODB AT {self.connection_string}")
+		print(f"SUCCESSFULLY CONNECTED TO MONGODB")
 
 	def insert_data(self, document):
 		self.collection.insert_one(document)
