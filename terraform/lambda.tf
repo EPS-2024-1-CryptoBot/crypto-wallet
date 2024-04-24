@@ -9,10 +9,10 @@ resource "aws_lambda_function" "terraform_lambda_func" {
     source_code_hash               = base64sha256(aws_s3_object.file_upload.key)
     timeout                        = 10
 
-    vpc_config {
-        subnet_ids         = [aws_subnet.api_private_subnet.id]
-        security_group_ids = [aws_security_group.lambda_internet_access_sec_group.id]
-    }
+    # vpc_config {
+    #     subnet_ids         = [aws_subnet.api_public_subnet.id]
+    #     security_group_ids = [aws_security_group.lambda_internet_access_sec_group.id]
+    # }
 
     environment {
         variables = {
