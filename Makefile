@@ -26,6 +26,7 @@ help:
 	@echo "$(CYAN)prod-build-deps$(END):		Installs depencendies into ./deps directory."
 	@echo "$(CYAN)build-local$(END):			Installs depencendies into ./deps directory using Docker."
 	@echo "$(CYAN)zip$(END):				Zips dependencies for lambda function."
+	@echo "$(CYAN)lint$(END):				Lints code inside ./wallet directory by PEP8."
 	@echo "$(CYAN)aws-config$(END):			Configures AWS credentials using AWS CLI."
 	@echo "$(CYAN)tf-init$(END):			Initializes terraform backend."
 	@echo "$(CYAN)tf-plan$(END):			Shows terraform modifications."
@@ -43,6 +44,8 @@ build-local:
 zip:
 	cd deps && zip ../lambda_function.zip -r .
 	cd wallet && zip ../lambda_function.zip -u ./*
+lint:
+	find ./wallet/* -name "*.py" | xargs black
 
 
 ###########################################################
