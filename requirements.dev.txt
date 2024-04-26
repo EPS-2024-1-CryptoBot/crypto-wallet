@@ -3,3 +3,4 @@ mangum
 uvicorn
 pymongo
 requests
+flask
