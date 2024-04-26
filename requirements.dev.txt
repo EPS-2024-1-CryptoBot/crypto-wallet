@@ -4,3 +4,4 @@ uvicorn
 pymongo
 requests
 flask
+black
