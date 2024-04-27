@@ -105,13 +105,13 @@ class Blockchain:
         encoded_block = json.dumps(block, sort_keys=True).encode()
         return hashlib.sha256(encoded_block).hexdigest()
 
-    def is_chain_valid(self, chain):
-        self.retrieve_blockchain()
-        previous_block = chain[0]
+    def is_chain_valid(self):
+        previous_block = self.chain[0]
         block_index = 1
-        while block_index < len(chain):
-            block = chain[block_index]
+        while block_index < len(self.chain):
+            block = self.chain[block_index]
             if block["previous_hash"] != self.hash(previous_block):
+                print('erro no hash')
                 return False
             
             previous_proof = previous_block["proof"]
@@ -120,6 +120,7 @@ class Blockchain:
                 str(proof**2 - previous_proof**2).encode()
             ).hexdigest()
             if hash_operation[:5] != "00f00":
+                print('erro no proof')
                 return False
             
             for transaction in block["transactions"]:
@@ -132,6 +133,7 @@ class Blockchain:
                     bytes.fromhex(transaction["signature"]),
                     bytes.fromhex(transaction["public_key"]),
                 ):
+                    print('erro na assinatura do bloco', block)
                     return False
             
             previous_block = block

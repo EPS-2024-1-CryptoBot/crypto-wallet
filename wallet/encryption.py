@@ -104,7 +104,7 @@ class Cryptography:
                 backend=default_backend()
             )
         )
-        public_key = alleged_public_key or self.public_key
+        public_key = alleged_public_key or public_key or self.public_key
         try:
             public_key.verify(
                 signature,

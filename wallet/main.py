@@ -66,6 +66,7 @@ def upload(user: User):
 
 @app.get("/get_chain")
 def get_chain():
+    blockchain.retrieve_blockchain()
     response = {"chain": blockchain.chain, "length": len(blockchain.chain)}
     return JSONResponse(content=response, status_code=200)
 
@@ -108,7 +109,8 @@ def mine_block():
 
 @app.get("/validate_chain")
 def validate_chain():
-    is_valid = blockchain.is_chain_valid(blockchain.chain)
+    blockchain.retrieve_blockchain()
+    is_valid = blockchain.is_chain_valid()
     response = {
         "message": "The blockchain is valid." if is_valid else "The blockchain is not valid.",
         "chain": blockchain.chain,
