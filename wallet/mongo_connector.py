@@ -30,12 +30,20 @@ class MongoConnector:
         self.switch(db, collection)
         self.collection.insert_one(document)
         self.__logger.info(
-            f"SUCCESSFULLY INSERTED DOCUMENT INTO MONGODB IN COLLECTION {self.collection}"
+            f"SUCCESSFULLY INSERTED DOCUMENT INTO MONGODB IN COLLECTION {collection}"
+        )
+
+    def delete_data(self, db, collection, _filter):
+        self.switch(db, collection)
+        self.collection.delete_many(_filter)
+        self.__logger.info(
+            f"SUCCESSFULLY DELETED DOCUMENT FROM MONGODB IN COLLECTION {collection}"
         )
 
     def retrieve_data(self, db, collection, _filter={}):
         self.switch(db, collection)
-        return list(self.collection.find(_filter))
+        response = list(self.collection.find(_filter, projection={"_id": False}))
+        return response
 
     def update_data_with_lock(self, db, collection, _filter, update_value):
         self.switch(db, collection)
@@ -45,7 +53,7 @@ class MongoConnector:
         self.collection.replace_one(_filter, update_value)
         self.collection.update_one(_filter, {"$unset": {"locked": ""}})
         self.__logger.info(
-            f"SUCCESSFULLY UPDATED DOCUMENT IN MONGODB IN COLLECTION {self.collection}"
+            f"SUCCESSFULLY UPDATED DOCUMENT IN MONGODB IN COLLECTION {collection}"
         )
 
 
