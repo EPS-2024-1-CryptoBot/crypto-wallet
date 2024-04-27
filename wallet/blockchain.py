@@ -4,6 +4,7 @@ import datetime
 import requests
 
 from urllib.parse import urlparse
+from encryption import Cryptography
 
 mongo_paths = {
     "blockchain": ["cbu_crypto", "blockchain"],
@@ -15,14 +16,26 @@ class Blockchain:
     def __init__(self, mongo_conn, user):
         self.mongo_conn = mongo_conn
         self.user = user
+        self.encryption = Cryptography()
 
+        self.retrieve_user_keys()
         self.retrieve_blockchain()
         self.retrieve_transactions()
         self.retrieve_users_in_chain()
 
         if self.chain == []:
+            self.encryption.generate_keys()
             self.create_block(proof=1, previous_hash="0")  # Genesis block
+
         self.nodes = set()
+
+    def retrieve_user_keys(self):
+        user_keys = self.mongo_conn.retrieve_data(
+            *mongo_paths["blockchain"], {"user": self.user}
+        )
+        if user_keys != []:
+            user_keys = user_keys.pop().get("keys", [])
+            self.encryption.load_keys(user_keys.get("public_key"), user_keys.get("private_key"))
 
     def retrieve_users_in_chain(self):
         chains = self.mongo_conn.retrieve_data(*mongo_paths["blockchain"], {})
@@ -61,12 +74,12 @@ class Blockchain:
         self.chain.append(block)
         self.retrieve_users_in_chain()
 
-        response = {"user": self.user, "chain": self.chain}
+        response = {"user": self.user, "chain": self.chain, "keys": self.encryption.keys}
         if previous_hash == "0": # Genesis block
             self.mongo_conn.insert_data(*mongo_paths["blockchain"], response)
         else:
             self.mongo_conn.delete_data(*mongo_paths["transactions"], {})
-            self.transactions = []
+            self.transactions = self.retrieve_transactions()
             self.mongo_conn.update_data_with_lock(
                 *mongo_paths["blockchain"], {"user": self.user}, response
             )
@@ -114,9 +127,11 @@ class Blockchain:
         sender = sender or self.user
         receiver = receiver or self.user
         transaction = {"sender": sender, "receiver": receiver, "amount": amount}
-        self.transactions.append(transaction)
+        # transaction["signature"] = self.encryption.encrypt(self.hash(transaction))
+        # self.transactions.append(transaction)
         previous_block = self.get_previous_block()
         self.mongo_conn.insert_data(*mongo_paths["transactions"], transaction)
+        self.retrieve_transactions()
         # self.mongo_conn.update_data_with_lock(
         #     *mongo_paths["blockchain"],
         #     {"user": self.user},

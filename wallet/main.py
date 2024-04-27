@@ -81,10 +81,7 @@ def add_transaction(transaction: Transaction):
         )
         response = {
             "message": f"This transaction will be included in the CBU blockchain in the block {index} when it is minerated by someone.",
-            "transaction": {
-                "amount": transaction_dict["amount"],
-                "receiver": transaction_dict["receiver"],
-            }
+            "transaction": transaction_dict
         }
         return JSONResponse(content=response, status_code=200)
     else:

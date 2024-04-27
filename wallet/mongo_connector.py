@@ -60,5 +60,7 @@ class MongoConnector:
 if __name__ == "__main__":
     mongo = MongoConnector()
 
-    mongo.insert_data("wallet", "users", {"name": "John", "age": 25})
-    print(list(mongo.retrieve_data("wallet", "users")))
+    # mongo.insert_data("wallet", "users", {"name": "John", "age": 25})
+    # print(list(mongo.retrieve_data("wallet", "users")))
+
+    print(mongo.retrieve_data("cbu_crypto", "transactions"))
