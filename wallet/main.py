@@ -106,6 +106,15 @@ def mine_block():
     }
     return response
 
+@app.get("/validate_chain")
+def validate_chain():
+    is_valid = blockchain.is_chain_valid(blockchain.chain)
+    response = {
+        "message": "The blockchain is valid." if is_valid else "The blockchain is not valid.",
+        "chain": blockchain.chain,
+    }
+    return JSONResponse(content=response, status_code=200)
+
 
 # @app.route("/connect_node", methods=["POST"])
 # def connect_node():

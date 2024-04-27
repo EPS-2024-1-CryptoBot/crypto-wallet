@@ -42,7 +42,7 @@ class Blockchain:
         self.users = [
             user_chain.get("user", [])
             for user_chain in chains
-            if user_chain.get("user", []) != self.user
+            if user_chain.get("user", []) != self.user or True # REMOVERRRRR
         ]
         return self.users
 
@@ -106,12 +106,14 @@ class Blockchain:
         return hashlib.sha256(encoded_block).hexdigest()
 
     def is_chain_valid(self, chain):
+        self.retrieve_blockchain()
         previous_block = chain[0]
         block_index = 1
         while block_index < len(chain):
             block = chain[block_index]
             if block["previous_hash"] != self.hash(previous_block):
                 return False
+            
             previous_proof = previous_block["proof"]
             proof = block["proof"]
             hash_operation = hashlib.sha256(
@@ -119,6 +121,20 @@ class Blockchain:
             ).hexdigest()
             if hash_operation[:5] != "00f00":
                 return False
+            
+            for transaction in block["transactions"]:
+                print(transaction, type(transaction))
+                if not self.encryption.verify_signature(
+                    self.hash({
+                        "sender": transaction["sender"],
+                        "receiver": transaction["receiver"],
+                        "amount": transaction["amount"],
+                    }),
+                    bytes.fromhex(transaction["signature"]),
+                    bytes.fromhex(transaction["public_key"]),
+                ):
+                    return False
+            
             previous_block = block
             block_index += 1
         return True
@@ -127,7 +143,8 @@ class Blockchain:
         sender = sender or self.user
         receiver = receiver or self.user
         transaction = {"sender": sender, "receiver": receiver, "amount": amount}
-        # transaction["signature"] = self.encryption.encrypt(self.hash(transaction))
+        transaction["signature"] = self.encryption.sign(self.hash(transaction)).hex()
+        transaction["public_key"] = self.encryption.keys.get("public_key").hex()
         # self.transactions.append(transaction)
         previous_block = self.get_previous_block()
         self.mongo_conn.insert_data(*mongo_paths["transactions"], transaction)
