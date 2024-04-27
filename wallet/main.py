@@ -18,32 +18,12 @@ mongodb = MongoConnector(os.environ.get("MONGO_URI"))
 blockchain = Blockchain(mongodb, os.environ.get("USER"))
 
 
-def mine_block():
-    previous_block = blockchain.get_previous_block()
-    previous_proof = previous_block["proof"]
-    blockchain.add_transaction(receiver="miner", amount=0.5)
-    proof = blockchain.proof_of_work(previous_proof)
-    previous_hash = blockchain.hash(previous_block)
-    block = blockchain.create_block(proof, previous_hash).get("chain")[-1]
-    print(block)
-    response = {
-        "message": "Parabéns! Você minerou um bloco.",
-        "index": block["index"],
-        "timestamp": block["timestamp"],
-        "proof": block["proof"],
-        "previous_hash": block["previous_hash"],
-        "transaction": block["transactions"],
-    }
-    return response
-
-
 class User(BaseModel):
     name: str
     age: int
 
 
 class Transaction(BaseModel):
-    sender: str
     receiver: str
     amount: float
 
@@ -93,16 +73,41 @@ def get_chain():
 @app.post("/add_transaction")
 def add_transaction(transaction: Transaction):
     transaction_dict = dict(transaction)
-    index = blockchain.add_transaction(
-        transaction_dict["sender"],
-        transaction_dict["receiver"],
-        transaction_dict["amount"],
-    )
+    blockchain_users = blockchain.retrieve_users_in_chain()
+    if transaction_dict["receiver"] in blockchain_users:
+        index = blockchain.add_transaction(
+            amount=transaction_dict["amount"],
+            receiver=transaction_dict["receiver"],
+        )
+        response = {
+            "message": f"This transaction will be included in the CBU blockchain in the block {index} when it is minerated by someone.",
+            "transaction": {
+                "amount": transaction_dict["amount"],
+                "receiver": transaction_dict["receiver"],
+            }
+        }
+        return JSONResponse(content=response, status_code=200)
+    else:
+        response = {
+            "message": "Receiver not found in the blockchain.",
+            "blockchain_users": blockchain_users,
+        }
+        return JSONResponse(content=response, status_code=400)
+
+
+@app.get("/mine_block")
+def mine_block():
+    previous_block = blockchain.get_previous_block()
+    previous_proof = previous_block["proof"]
+    blockchain.add_transaction(sender="miner", amount=10)
+    proof = blockchain.proof_of_work(previous_proof)
+    previous_hash = blockchain.hash(previous_block)
+    block = blockchain.create_block(proof, previous_hash).get("chain")[-1]
     response = {
-        "message": f"Esta transação será adicionada ao Bloco {index}.",
-        "action": mine_block(),
+        "message": "Congrats! You have minered a block!",
+        "block": block,
     }
-    return JSONResponse(content=response, status_code=200)
+    return response
 
 
 # @app.route("/connect_node", methods=["POST"])
