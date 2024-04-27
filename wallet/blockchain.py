@@ -16,19 +16,41 @@ class Blockchain:
         self.mongo_conn = mongo_conn
         self.user = user
 
+        self.retrieve_blockchain()
+        self.retrieve_transactions()
+        self.retrieve_users_in_chain()
+
+        if self.chain == []:
+            self.create_block(proof=1, previous_hash="0")  # Genesis block
+        self.nodes = set()
+
+    def retrieve_users_in_chain(self):
+        chains = self.mongo_conn.retrieve_data(*mongo_paths["blockchain"], {})
+        self.users = [
+            user_chain.get("user", [])
+            for user_chain in chains
+            if user_chain.get("user", []) != self.user
+        ]
+        return self.users
+
+    def retrieve_blockchain(self):
         self.mongo_chain = self.mongo_conn.retrieve_data(
             *mongo_paths["blockchain"], {"user": self.user}
         )
         self.chain = (
             [] if not self.mongo_chain else self.mongo_chain.pop().get("chain", [])
         )
-        self.transactions = []
 
-        if self.chain == []:
-            self.create_block(proof=1, previous_hash="0")
-        self.nodes = set()
+    def retrieve_transactions(self):
+        self.mongo_transactions = self.mongo_conn.retrieve_data(
+            *mongo_paths["transactions"]
+        )
+        self.transactions = (
+            [] if not self.mongo_transactions else self.mongo_transactions
+        )
 
     def create_block(self, proof, previous_hash):
+        self.retrieve_transactions()
         block = {
             "index": len(self.chain) + 1,
             "timestamp": str(datetime.datetime.now()),
@@ -36,13 +58,15 @@ class Blockchain:
             "previous_hash": previous_hash,
             "transactions": self.transactions,
         }
-        self.transactions = []
         self.chain.append(block)
+        self.retrieve_users_in_chain()
 
         response = {"user": self.user, "chain": self.chain}
-        if previous_hash == "0":
+        if previous_hash == "0": # Genesis block
             self.mongo_conn.insert_data(*mongo_paths["blockchain"], response)
         else:
+            self.mongo_conn.delete_data(*mongo_paths["transactions"], {})
+            self.transactions = []
             self.mongo_conn.update_data_with_lock(
                 *mongo_paths["blockchain"], {"user": self.user}, response
             )
@@ -58,7 +82,7 @@ class Blockchain:
             hash_operation = hashlib.sha256(
                 str(new_proof**2 - previous_proof**2).encode()
             ).hexdigest()
-            if hash_operation[:4] == "0000":
+            if hash_operation[:5] == "00f00":
                 check_proof = True
             else:
                 new_proof += 1
@@ -80,23 +104,24 @@ class Blockchain:
             hash_operation = hashlib.sha256(
                 str(proof**2 - previous_proof**2).encode()
             ).hexdigest()
-            if hash_operation[:4] != "0000":
+            if hash_operation[:5] != "00f00":
                 return False
             previous_block = block
             block_index += 1
         return True
 
-    def add_transaction(self, receiver, amount, sender=None):
+    def add_transaction(self, amount, sender=None, receiver=None):
         sender = sender or self.user
-        self.transactions.append(
-            {"sender": sender, "receiver": receiver, "amount": amount}
-        )
+        receiver = receiver or self.user
+        transaction = {"sender": sender, "receiver": receiver, "amount": amount}
+        self.transactions.append(transaction)
         previous_block = self.get_previous_block()
-        self.mongo_conn.update_data_with_lock(
-            *mongo_paths["blockchain"],
-            {"user": self.user},
-            {"user": self.user, "chain": self.chain},
-        )
+        self.mongo_conn.insert_data(*mongo_paths["transactions"], transaction)
+        # self.mongo_conn.update_data_with_lock(
+        #     *mongo_paths["blockchain"],
+        #     {"user": self.user},
+        #     {"user": self.user, "chain": self.chain},
+        # )
         return previous_block["index"] + 1
 
     def add_node(self, address):
@@ -113,7 +138,6 @@ class Blockchain:
                 length = response.json()["length"]
                 chain = response.json()["chain"]
                 if length > max_length and self.is_chain_valid(chain):
-
                     max_length = length
                     longest_chain = chain
         if longest_chain:
