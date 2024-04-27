@@ -123,7 +123,6 @@ class Blockchain:
                 return False
             
             for transaction in block["transactions"]:
-                print(transaction, type(transaction))
                 if not self.encryption.verify_signature(
                     self.hash({
                         "sender": transaction["sender"],

@@ -17,9 +17,7 @@ class Cryptography:
                 backend=default_backend()
             )
         )
-        print(alleged_public_key)
-        print(bytes.fromhex(encryption))
-        msg = self.decrypt(bytes.fromhex(encryption), self.private_key)
+        msg = self.decrypt(bytes.fromhex(encryption), alleged_public_key)
         return msg == hash
 
     def load_keys(self, public_key, private_key):
@@ -63,35 +61,8 @@ class Cryptography:
         )
         self.public_key = self.private_key.public_key()
 
-    def save_keys_file(self, private_key_file="private_key.pem", public_key_file="public_key.pem"):
-        with open(private_key_file, "wb") as f:
-            f.write(self.private_key.private_bytes(
-                encoding=serialization.Encoding.PEM,
-                format=serialization.PrivateFormat.PKCS8,
-                encryption_algorithm=serialization.NoEncryption()
-            ))
-        with open(public_key_file, "wb") as f:
-            f.write(self.public_key.public_bytes(
-                encoding=serialization.Encoding.PEM,
-                format=serialization.PublicFormat.SubjectPublicKeyInfo
-            ))
-
-    def load_keys_file(self, private_key_file="private_key.pem", public_key_file="public_key.pem"):
-        with open(private_key_file, "rb") as f:
-            self.private_key = serialization.load_pem_private_key(
-                f.read(),
-                password=None,
-                backend=default_backend()
-            )
-        with open(public_key_file, "rb") as f:
-            self.public_key = serialization.load_pem_public_key(
-                f.read(),
-                backend=default_backend()
-            )
-
     def encrypt(self, message, public_key=None):
         public_key = public_key or self.public_key
-        # Encrypt the message using the public key
         encrypted = public_key.encrypt(
             message.encode(),
             padding.OAEP(
