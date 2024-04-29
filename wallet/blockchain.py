@@ -3,7 +3,6 @@ import hashlib
 import datetime
 import requests
 
-from urllib.parse import urlparse
 from encryption import Cryptography
 
 mongo_paths = {
@@ -27,7 +26,6 @@ class Blockchain:
             self.encryption.generate_keys()
             self.create_block(proof=1, previous_hash="0")  # Genesis block
 
-        self.nodes = set()
 
     def retrieve_user_keys(self):
         user_keys = self.mongo_conn.retrieve_data(
@@ -111,7 +109,6 @@ class Blockchain:
         while block_index < len(self.chain):
             block = self.chain[block_index]
             if block["previous_hash"] != self.hash(previous_block):
-                print('erro no hash')
                 return False
             
             previous_proof = previous_block["proof"]
@@ -120,20 +117,20 @@ class Blockchain:
                 str(proof**2 - previous_proof**2).encode()
             ).hexdigest()
             if hash_operation[:5] != "00f00":
-                print('erro no proof')
                 return False
             
             for transaction in block["transactions"]:
+                transaction_hex = self.hash(
+                    block=json.dumps(
+                        obj=transaction["transaction"],
+                        sort_keys=True,
+                    )
+                )
                 if not self.encryption.verify_signature(
-                    self.hash({
-                        "sender": transaction["sender"],
-                        "receiver": transaction["receiver"],
-                        "amount": transaction["amount"],
-                    }),
-                    bytes.fromhex(transaction["signature"]),
-                    bytes.fromhex(transaction["public_key"]),
+                    message=transaction_hex,
+                    signature=transaction["transaction_data"]["signature"],
+                    public_key=transaction["transaction_data"]["public_key"],
                 ):
-                    print('erro na assinatura do bloco', block)
                     return False
             
             previous_block = block
@@ -143,38 +140,21 @@ class Blockchain:
     def add_transaction(self, amount, sender=None, receiver=None):
         sender = sender or self.user
         receiver = receiver or self.user
+
         transaction = {"sender": sender, "receiver": receiver, "amount": amount}
-        transaction["signature"] = self.encryption.sign(self.hash(transaction)).hex()
-        transaction["public_key"] = self.encryption.keys.get("public_key").hex()
-        # self.transactions.append(transaction)
+        transaction_hex = self.hash(
+            block=json.dumps(
+                obj=transaction,
+                sort_keys=True,
+            )
+        )
+
+        transaction_data = {}
+        transaction_data["signature"] = self.encryption.sign(message=transaction_hex, private_key=self.encryption.keys.get("private_key"))
+        transaction_data["public_key"] = self.encryption.keys.get("public_key")
+        
         previous_block = self.get_previous_block()
-        self.mongo_conn.insert_data(*mongo_paths["transactions"], transaction)
+        self.mongo_conn.insert_data(*mongo_paths["transactions"], {"transaction": transaction, "transaction_data": transaction_data})
         self.retrieve_transactions()
-        # self.mongo_conn.update_data_with_lock(
-        #     *mongo_paths["blockchain"],
-        #     {"user": self.user},
-        #     {"user": self.user, "chain": self.chain},
-        # )
+
         return previous_block["index"] + 1
-
-    def add_node(self, address):
-        parsed_url = urlparse(address)
-        self.nodes.add(parsed_url.netloc)
-
-    def replace_chain(self):
-        network = self.nodes
-        longest_chain = None
-        max_length = len(self.chain)
-        for node in network:
-            response = requests.get(f"http://{node}/get_chain")
-            if response.status_code == 200:
-                length = response.json()["length"]
-                chain = response.json()["chain"]
-                if length > max_length and self.is_chain_valid(chain):
-                    max_length = length
-                    longest_chain = chain
-        if longest_chain:
-            self.chain = longest_chain
-            return True
-        else:
-            return False
