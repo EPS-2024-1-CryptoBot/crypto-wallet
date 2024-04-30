@@ -1,16 +1,16 @@
-import os
-import sys
 import json
-import requests
+import os
 import subprocess
+import sys
 
-from fastapi.responses import JSONResponse
-from mongo_connector import MongoConnector
-from fastapi import FastAPI, Response
+import requests
 from blockchain import Blockchain
-from pydantic import BaseModel
+from encryption import Cryptography
+from fastapi import FastAPI, Response
+from fastapi.responses import JSONResponse
 from mangum import Mangum
-
+from mongo_connector import MongoConnector
+from pydantic import BaseModel
 
 app = FastAPI()
 handler = Mangum(app)
@@ -72,9 +72,19 @@ def get_chain():
 
 
 @app.post("/add_transaction")
+    
+    # # transaction_hex = blockchain.hash_transaction(transaction_dict)
+    # # if not Cryptography.verify_signature(transaction_hex, transaction_dict["signature"], transaction_dict["sender_public_key"]):
+    # #     return JSONResponse(content={"message": "Invalid transaction signature."}, status_code=400)
+    
 def add_transaction(transaction: Transaction):
     transaction_dict = dict(transaction)
     blockchain_users = blockchain.retrieve_users_in_chain()
+    
+    sender_balance = get_balance("durso") # TROCAR USER HARD CODED
+    if sender_balance < transaction_dict["amount"]:
+        return JSONResponse(content={"message": "Insufficient balance.", "Saldo:": sender_balance}, status_code=400)
+    
     if transaction_dict["receiver"] in blockchain_users:
         index = blockchain.add_transaction(
             amount=transaction_dict["amount"],
@@ -117,6 +127,10 @@ def validate_chain():
         "chain": blockchain.chain,
     }
     return JSONResponse(content=response, status_code=200)
+
+@app.get("/get_balance")
+def get_balance(user):
+    return blockchain.get_balance(user)
 
 
 if __name__ == "__main__":

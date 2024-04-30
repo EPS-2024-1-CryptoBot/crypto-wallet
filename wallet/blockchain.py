@@ -1,8 +1,8 @@
-import json
-import hashlib
 import datetime
-import requests
+import hashlib
+import json
 
+import requests
 from encryption import Cryptography
 
 mongo_paths = {
@@ -158,3 +158,17 @@ class Blockchain:
         self.retrieve_transactions()
 
         return previous_block["index"] + 1
+
+    def get_balance(self, user):
+        self.retrieve_blockchain()
+        balance = 0
+        print(user)
+        for block in self.chain:
+            for transaction in block.get("transactions"):
+                data = transaction.get("transaction")
+                if user == data.get("sender"):
+                    balance -= data.get("amount")
+                if user == data.get("receiver"):
+                    balance += data.get("amount")
+        print(balance)
+        return balance
