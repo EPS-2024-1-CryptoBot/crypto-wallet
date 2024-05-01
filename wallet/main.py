@@ -16,6 +16,7 @@ app = FastAPI()
 handler = Mangum(app)
 mongodb = MongoConnector(os.environ.get("MONGO_URI"))
 blockchain = Blockchain(mongodb, os.environ.get("USER"))
+encryption = Cryptography()
 
 
 class User(BaseModel):
@@ -72,11 +73,6 @@ def get_chain():
 
 
 @app.post("/add_transaction")
-    
-    # # transaction_hex = blockchain.hash_transaction(transaction_dict)
-    # # if not Cryptography.verify_signature(transaction_hex, transaction_dict["signature"], transaction_dict["sender_public_key"]):
-    # #     return JSONResponse(content={"message": "Invalid transaction signature."}, status_code=400)
-    
 def add_transaction(transaction: Transaction):
     transaction_dict = dict(transaction)
     blockchain_users = blockchain.retrieve_users_in_chain()
@@ -85,6 +81,13 @@ def add_transaction(transaction: Transaction):
     if sender_balance < transaction_dict["amount"]:
         return JSONResponse(content={"message": "Insufficient balance.", "Saldo:": sender_balance}, status_code=400)
     
+    if not encryption.verify_signature(
+    message=transaction_hex,
+    signature=transaction_data["signature"],
+    public_key=transaction_data["public_key"]
+    ):
+        return JSONResponse(content={"message": "Invalid transaction signature."}, status_code=400)
+
     if transaction_dict["receiver"] in blockchain_users:
         index = blockchain.add_transaction(
             amount=transaction_dict["amount"],
