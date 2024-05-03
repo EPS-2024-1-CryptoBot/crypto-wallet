@@ -62,18 +62,37 @@ class Blockchain:
 
     def create_block(self, proof, previous_hash):
         self.retrieve_transactions()
+
+        verified_transactions = []
+        for transaction in self.transactions:
+            transaction_data = transaction['transaction_data']
+            transaction_hex = self.hash(
+                block=json.dumps(
+                    obj=transaction['transaction'],
+                    sort_keys=True,
+                )
+            )
+            if self.encryption.verify_signature(
+                message=transaction_hex,
+                signature=transaction_data['signature'],
+                public_key=transaction_data['public_key'],
+            ):
+                verified_transactions.append(transaction)
+            else:
+                print("Transação inválida detectada e ignorada.")
+
         block = {
             "index": len(self.chain) + 1,
             "timestamp": str(datetime.datetime.now()),
             "proof": proof,
             "previous_hash": previous_hash,
-            "transactions": self.transactions,
+            "transactions": verified_transactions,
         }
         self.chain.append(block)
         self.retrieve_users_in_chain()
 
         response = {"user": self.user, "chain": self.chain, "keys": self.encryption.keys}
-        if previous_hash == "0": # Genesis block
+        if previous_hash == "0":  # Genesis block
             self.mongo_conn.insert_data(*mongo_paths["blockchain"], response)
         else:
             self.mongo_conn.delete_data(*mongo_paths["transactions"], {})
@@ -82,6 +101,7 @@ class Blockchain:
                 *mongo_paths["blockchain"], {"user": self.user}, response
             )
         return response
+
 
     def get_previous_block(self):
         return self.chain[-1]
@@ -93,7 +113,7 @@ class Blockchain:
             hash_operation = hashlib.sha256(
                 str(new_proof**2 - previous_proof**2).encode()
             ).hexdigest()
-            if hash_operation[:5] == "00f00":
+            if hash_operation.startswith("00f00"):
                 check_proof = True
             else:
                 new_proof += 1
@@ -116,7 +136,7 @@ class Blockchain:
             hash_operation = hashlib.sha256(
                 str(proof**2 - previous_proof**2).encode()
             ).hexdigest()
-            if hash_operation[:5] != "00f00":
+            if not hash_operation.startswith("00f00"):
                 return False
             
             for transaction in block["transactions"]:
