@@ -1,5 +1,5 @@
 resource "aws_s3_bucket" "wallet_api_zip" {
-  bucket = "${var.environment}-backend-cryptobotunb-${data.aws_caller_identity.current.account_id}"
+  bucket = "${var.environment}-wallet-api-cryptobotunb-${data.aws_caller_identity.current.account_id}"
 }
 
 resource "aws_s3_object" "file_upload" {
