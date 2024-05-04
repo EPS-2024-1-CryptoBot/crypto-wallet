@@ -80,13 +80,6 @@ def add_transaction(transaction: Transaction):
     sender_balance = get_balance("durso") # TROCAR USER HARD CODED
     if sender_balance < transaction_dict["amount"]:
         return JSONResponse(content={"message": "Insufficient balance.", "Saldo:": sender_balance}, status_code=400)
-    
-    if not encryption.verify_signature(
-    message=transaction_hex,
-    signature=transaction_data["signature"],
-    public_key=transaction_data["public_key"]
-    ):
-        return JSONResponse(content={"message": "Invalid transaction signature."}, status_code=400)
 
     if transaction_dict["receiver"] in blockchain_users:
         index = blockchain.add_transaction(

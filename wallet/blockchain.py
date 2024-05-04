@@ -79,7 +79,7 @@ class Blockchain:
             ):
                 verified_transactions.append(transaction)
             else:
-                print("Transação inválida detectada e ignorada.")
+                print("Invalid transaction detected and ignored.")
 
         block = {
             "index": len(self.chain) + 1,
