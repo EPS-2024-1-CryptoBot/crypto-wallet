@@ -192,3 +192,42 @@ class Blockchain:
                     balance += data.get("amount")
         print(balance)
         return balance
+    
+    def get_invalid_block_index(self):
+        previous_block = self.chain[0]
+        block_index = 1
+        while block_index < len(self.chain):
+            block = self.chain[block_index]
+            if block["previous_hash"] != self.hash(previous_block):
+                return block_index
+            previous_proof = previous_block["proof"]
+            proof = block["proof"]
+            hash_operation = hashlib.sha256(
+                str(proof**2 - previous_proof**2).encode()
+            ).hexdigest()
+            if hash_operation[:5] != "00f00":
+                return block_index
+            for transaction in block["transactions"]:
+                transaction_hex = self.hash(
+                    block=json.dumps(
+                        obj=transaction["transaction"],
+                        sort_keys=True,
+                    )
+                )
+                if not self.encryption.verify_signature(
+                    message=transaction_hex,
+                    signature=transaction["transaction_data"]["signature"],
+                    public_key=transaction["transaction_data"]["public_key"],
+                ):
+                    return block_index
+            previous_block = block
+            block_index += 1
+        return -1
+    
+    def revalidate_chain(self, invalid_block_index):
+        self.chain = self.chain[:invalid_block_index]
+
+        response = {"user": self.user, "chain": self.chain, "keys": self.encryption.keys}
+        self.mongo_conn.update_data_with_lock(
+            *mongo_paths["blockchain"], {"user": self.user}, response
+        )
