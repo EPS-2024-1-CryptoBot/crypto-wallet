@@ -231,3 +231,42 @@ class Blockchain:
         self.mongo_conn.update_data_with_lock(
             *mongo_paths["blockchain"], {"user": self.user}, response
         )
+
+    def sync_chain(self):
+        self.retrieve_users_in_chain()
+        for user in self.users:
+            if user != self.user:
+                user_chain = self.mongo_conn.retrieve_data(
+                    *mongo_paths["blockchain"], {"user": user}
+                )
+                user_chain = user_chain.pop().get("chain", [])
+                metrics = self.get_chain_metrics(user_chain)
+                if metrics["length"] > len(self.chain):
+                    print("Sincronizando blockchain...", user)
+                    self.chain = metrics["blocks"]
+                    response = {"user": self.user, "chain": self.chain, "keys": self.encryption.keys}
+                    self.mongo_conn.update_data_with_lock(
+                        *mongo_paths["blockchain"], {"user": self.user}, response
+                    )
+
+
+    def get_valid_blocks(self, chain):
+        valid_blocks = []
+        previous_block = chain[0]
+        block_index = 1
+        while block_index < len(chain):
+            block = chain[block_index]
+            if block["previous_hash"] == self.hash(previous_block):
+                valid_blocks.append(block)
+            previous_block = block
+            block_index += 1
+        return valid_blocks
+
+    def get_chain_metrics(self,chain):
+        valid_blocks = self.get_valid_blocks(chain)
+        valid_chain_metrics = {
+            "length": len(valid_blocks),
+            "blocks": valid_blocks,
+        }
+
+        return valid_chain_metrics

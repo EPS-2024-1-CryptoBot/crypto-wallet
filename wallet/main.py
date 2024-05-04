@@ -108,13 +108,17 @@ def add_transaction(transaction: Transaction):
 
 @app.get("/mine_block")
 def mine_block():
-    blockchain.retrieve_blockchain()
-    is_valid = blockchain.is_chain_valid()
-    if not is_valid:
-        # get the invalid block
-        invalid_block_index = blockchain.get_invalid_block_index()
-        # delete the and the following blocks
-        blockchain.revalidate_chain(invalid_block_index)
+    blockchain.sync_chain() # sync the chain before mining
+    blockchain.retrieve_blockchain() # retrieve the chain
+    
+    ''' 
+    Commented code below is the old way of validating the chain.
+    Right now, the chain is being validated before mining.
+    '''
+    # is_valid = blockchain.is_chain_valid()
+    # if not is_valid:
+    #     invalid_block_index = blockchain.get_invalid_block_index()
+    #     blockchain.revalidate_chain(invalid_block_index)
 
     previous_block = blockchain.get_previous_block()
     previous_proof = previous_block["proof"]
