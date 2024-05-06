@@ -10,7 +10,7 @@ resource "aws_lambda_function" "terraform_lambda_func" {
     timeout                        = 10
 
     # vpc_config {
-    #     subnet_ids         = [aws_subnet.api_public_subnet.id]
+    #     subnet_ids         = [aws_subnet.api_private_subnet.id]
     #     security_group_ids = [aws_security_group.lambda_internet_access_sec_group.id]
     # }
 

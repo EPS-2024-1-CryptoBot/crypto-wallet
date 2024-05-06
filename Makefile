@@ -34,6 +34,8 @@ help:
 
 ###########################################################
 # PRODUCTION
+act:
+	act --container-architecture linux/amd64
 prod-build-deps:
 	pip install -t ./deps -r requirements.txt
 build-local:
