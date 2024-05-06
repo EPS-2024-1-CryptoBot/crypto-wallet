@@ -76,10 +76,13 @@ def get_chain():
 def add_transaction(transaction: Transaction):
     transaction_dict = dict(transaction)
     blockchain_users = blockchain.retrieve_users_in_chain()
-    
-    sender_balance = get_balance("durso") # TROCAR USER HARD CODED
+
+    sender_balance = get_balance("durso")  # TROCAR USER HARD CODED
     if sender_balance < transaction_dict["amount"]:
-        return JSONResponse(content={"message": "Insufficient balance.", "Saldo:": sender_balance}, status_code=400)
+        return JSONResponse(
+            content={"message": "Insufficient balance.", "Saldo:": sender_balance},
+            status_code=400,
+        )
 
     if transaction_dict["receiver"] in blockchain_users:
         index = blockchain.add_transaction(
@@ -88,7 +91,7 @@ def add_transaction(transaction: Transaction):
         )
         response = {
             "message": f"This transaction will be included in the CBU blockchain in the block {index} when it is minerated by someone.",
-            "transaction": transaction_dict
+            "transaction": transaction_dict,
         }
         return JSONResponse(content=response, status_code=200)
     else:
@@ -101,13 +104,13 @@ def add_transaction(transaction: Transaction):
 
 @app.get("/mine_block")
 def mine_block():
-    blockchain.sync_chain() # sync the chain before mining
-    blockchain.retrieve_blockchain() # retrieve the chain
-    
-    ''' 
+    blockchain.sync_chain()  # sync the chain before mining
+    blockchain.retrieve_blockchain()  # retrieve the chain
+
+    """ 
     Commented code below is the old way of validating the chain.
     Right now, the chain is being validated before mining.
-    '''
+    """
     # is_valid = blockchain.is_chain_valid()
     # if not is_valid:
     #     invalid_block_index = blockchain.get_invalid_block_index()
@@ -125,16 +128,20 @@ def mine_block():
     }
     return response
 
+
 @app.get("/validate_chain")
 def validate_chain():
     blockchain.retrieve_blockchain()
     blockchain.retrieve_transactions()
     is_valid = blockchain.is_chain_valid()
     response = {
-        "message": "The blockchain is valid." if is_valid else "The blockchain is not valid.",
+        "message": (
+            "The blockchain is valid." if is_valid else "The blockchain is not valid."
+        ),
         "chain": blockchain.chain,
     }
     return JSONResponse(content=response, status_code=200)
+
 
 @app.get("/get_balance")
 def get_balance(user):

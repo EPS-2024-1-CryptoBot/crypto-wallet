@@ -26,21 +26,22 @@ class Blockchain:
             self.encryption.generate_keys()
             self.create_block(proof=1, previous_hash="0")  # Genesis block
 
-
     def retrieve_user_keys(self):
         user_keys = self.mongo_conn.retrieve_data(
             *mongo_paths["blockchain"], {"user": self.user}
         )
         if user_keys != []:
             user_keys = user_keys.pop().get("keys", [])
-            self.encryption.load_keys(user_keys.get("public_key"), user_keys.get("private_key"))
+            self.encryption.load_keys(
+                user_keys.get("public_key"), user_keys.get("private_key")
+            )
 
     def retrieve_users_in_chain(self):
         chains = self.mongo_conn.retrieve_data(*mongo_paths["blockchain"], {})
         self.users = [
             user_chain.get("user", [])
             for user_chain in chains
-            if user_chain.get("user", []) != self.user or True # REMOVERRRRR
+            if user_chain.get("user", []) != self.user or True  # REMOVERRRRR
         ]
         return self.users
 
@@ -65,17 +66,17 @@ class Blockchain:
 
         verified_transactions = []
         for transaction in self.transactions:
-            transaction_data = transaction['transaction_data']
+            transaction_data = transaction["transaction_data"]
             transaction_hex = self.hash(
                 block=json.dumps(
-                    obj=transaction['transaction'],
+                    obj=transaction["transaction"],
                     sort_keys=True,
                 )
             )
             if self.encryption.verify_signature(
                 message=transaction_hex,
-                signature=transaction_data['signature'],
-                public_key=transaction_data['public_key'],
+                signature=transaction_data["signature"],
+                public_key=transaction_data["public_key"],
             ):
                 verified_transactions.append(transaction)
             else:
@@ -91,7 +92,11 @@ class Blockchain:
         self.chain.append(block)
         self.retrieve_users_in_chain()
 
-        response = {"user": self.user, "chain": self.chain, "keys": self.encryption.keys}
+        response = {
+            "user": self.user,
+            "chain": self.chain,
+            "keys": self.encryption.keys,
+        }
         if previous_hash == "0":  # Genesis block
             self.mongo_conn.insert_data(*mongo_paths["blockchain"], response)
         else:
@@ -101,7 +106,6 @@ class Blockchain:
                 *mongo_paths["blockchain"], {"user": self.user}, response
             )
         return response
-
 
     def get_previous_block(self):
         return self.chain[-1]
@@ -130,7 +134,7 @@ class Blockchain:
             block = self.chain[block_index]
             if block["previous_hash"] != self.hash(previous_block):
                 return False
-            
+
             previous_proof = previous_block["proof"]
             proof = block["proof"]
             hash_operation = hashlib.sha256(
@@ -138,7 +142,7 @@ class Blockchain:
             ).hexdigest()
             if not hash_operation.startswith("00f00"):
                 return False
-            
+
             for transaction in block["transactions"]:
                 transaction_hex = self.hash(
                     block=json.dumps(
@@ -152,7 +156,7 @@ class Blockchain:
                     public_key=transaction["transaction_data"]["public_key"],
                 ):
                     return False
-            
+
             previous_block = block
             block_index += 1
         return True
@@ -170,11 +174,16 @@ class Blockchain:
         )
 
         transaction_data = {}
-        transaction_data["signature"] = self.encryption.sign(message=transaction_hex, private_key=self.encryption.keys.get("private_key"))
+        transaction_data["signature"] = self.encryption.sign(
+            message=transaction_hex, private_key=self.encryption.keys.get("private_key")
+        )
         transaction_data["public_key"] = self.encryption.keys.get("public_key")
-        
+
         previous_block = self.get_previous_block()
-        self.mongo_conn.insert_data(*mongo_paths["transactions"], {"transaction": transaction, "transaction_data": transaction_data})
+        self.mongo_conn.insert_data(
+            *mongo_paths["transactions"],
+            {"transaction": transaction, "transaction_data": transaction_data}
+        )
         self.retrieve_transactions()
 
         return previous_block["index"] + 1
@@ -192,7 +201,7 @@ class Blockchain:
                     balance += data.get("amount")
         print(balance)
         return balance
-    
+
     def get_invalid_block_index(self):
         previous_block = self.chain[0]
         block_index = 1
@@ -223,11 +232,15 @@ class Blockchain:
             previous_block = block
             block_index += 1
         return -1
-    
+
     def revalidate_chain(self, invalid_block_index):
         self.chain = self.chain[:invalid_block_index]
 
-        response = {"user": self.user, "chain": self.chain, "keys": self.encryption.keys}
+        response = {
+            "user": self.user,
+            "chain": self.chain,
+            "keys": self.encryption.keys,
+        }
         self.mongo_conn.update_data_with_lock(
             *mongo_paths["blockchain"], {"user": self.user}, response
         )
@@ -244,11 +257,14 @@ class Blockchain:
                 if metrics["length"] > len(self.chain):
                     print("Sincronizando blockchain...", user)
                     self.chain = metrics["blocks"]
-                    response = {"user": self.user, "chain": self.chain, "keys": self.encryption.keys}
+                    response = {
+                        "user": self.user,
+                        "chain": self.chain,
+                        "keys": self.encryption.keys,
+                    }
                     self.mongo_conn.update_data_with_lock(
                         *mongo_paths["blockchain"], {"user": self.user}, response
                     )
-
 
     def get_valid_blocks(self, chain):
         valid_blocks = []
@@ -262,7 +278,7 @@ class Blockchain:
             block_index += 1
         return valid_blocks
 
-    def get_chain_metrics(self,chain):
+    def get_chain_metrics(self, chain):
         valid_blocks = self.get_valid_blocks(chain)
         valid_chain_metrics = {
             "length": len(valid_blocks),
