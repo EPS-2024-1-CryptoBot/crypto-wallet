@@ -1,5 +1,5 @@
 plan:
-	terraform plan
+	terraform plan -var-file=terraform.tfvars
 apply:
 	terraform apply -auto-approve
 apply-dev:

@@ -8,6 +8,7 @@ lambda_function.zip
 *.env
 terraform.tfvars
 .vars
+__pycache__
 
 # Logs
 logs
