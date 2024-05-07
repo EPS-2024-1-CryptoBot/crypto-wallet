@@ -37,7 +37,7 @@ help:
 act:
 	act --container-architecture linux/amd64
 prod-build-deps:
-	pip install -t ./deps -r requirements.txt
+	python -m pip install -t ./deps -r requirements.txt
 build-local:
 	docker build -t wallet_api -f Dockerfile.prod .
 	docker create --name api_zip wallet_api
