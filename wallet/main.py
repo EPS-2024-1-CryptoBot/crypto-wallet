@@ -1,22 +1,37 @@
 import json
 import os
-import subprocess
-import sys
 
 import requests
 from blockchain import Blockchain
 from encryption import Cryptography
-from fastapi import FastAPI, Response
+from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from mangum import Mangum
 from mongo_connector import MongoConnector
 from pydantic import BaseModel
+from starlette.middleware.base import BaseHTTPMiddleware
 
 app = FastAPI()
 handler = Mangum(app)
 mongodb = MongoConnector(os.environ.get("MONGO_URI"))
 blockchain = Blockchain(mongodb, os.environ.get("USER"))
 encryption = Cryptography()
+
+class MiddleWare(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        try:
+            user = request.query_params.get("user")
+            set_user(user)
+        except:
+            return JSONResponse({"message": f"User can't be {type(user)} type"}, 400)
+
+        global blockchain
+        blockchain = Blockchain(mongodb, os.environ.get("USER"))
+        
+        response = await call_next(request)
+        return response
+
+app.add_middleware(MiddleWare)
 
 
 class User(BaseModel):
@@ -64,16 +79,21 @@ def upload(user: User):
 
     return {"status": 200, "message": "Data uploaded successfully!", "data": dados}
 
+## BLOCKCHAIN
+
+def set_user(user: str):
+    os.environ["USER"] = user
+    blockchain.user = user
 
 @app.get("/get_chain")
-def get_chain():
+def get_chain(user: str):
     blockchain.retrieve_blockchain()
     response = {"chain": blockchain.chain, "length": len(blockchain.chain)}
     return JSONResponse(content=response, status_code=200)
 
 
 @app.post("/add_transaction")
-def add_transaction(transaction: Transaction):
+def add_transaction(transaction: Transaction, user: str):
     transaction_dict = dict(transaction)
     blockchain_users = blockchain.retrieve_users_in_chain()
 
@@ -103,7 +123,7 @@ def add_transaction(transaction: Transaction):
 
 
 @app.get("/mine_block")
-def mine_block():
+def mine_block(user: str):
     blockchain.sync_chain()  # sync the chain before mining
     blockchain.retrieve_blockchain()  # retrieve the chain
 
@@ -130,7 +150,10 @@ def mine_block():
 
 
 @app.get("/validate_chain")
-def validate_chain():
+def validate_chain(user: str):
+    """
+    This endpoint validates the blockchain.
+    """
     blockchain.retrieve_blockchain()
     blockchain.retrieve_transactions()
     is_valid = blockchain.is_chain_valid()
@@ -144,8 +167,8 @@ def validate_chain():
 
 
 @app.get("/get_balance")
-def get_balance(user):
-    return blockchain.get_balance(user)
+def get_balance(user: str):
+    return blockchain.get_balance(os.environ.get("USER"))
 
 
 if __name__ == "__main__":
