@@ -17,17 +17,28 @@ mongodb = MongoConnector(os.environ.get("MONGO_URI"))
 blockchain = Blockchain(mongodb, os.environ.get("USER"))
 encryption = Cryptography()
 
+included_routes = [
+    "/get_chain",
+    "/add_transaction",
+    "/mine_block",
+    "/validate_chain",
+    "/get_balance",
+]
+
 class MiddleWare(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
-        try:
-            user = request.query_params.get("user")
-            set_user(user)
-        except:
-            return JSONResponse({"message": f"User can't be {type(user)} type"}, 400)
+        global included_routes
+        if request.url.path in included_routes:
+            print(request.url.path=="/docs")
+            try:
+                user = request.query_params.get("user")
+                set_user(user)
+            except:
+                return JSONResponse({"message": f"User can't be {type(user)} type", "required_query_param": "user"}, status_code=400)
 
-        global blockchain
-        blockchain = Blockchain(mongodb, os.environ.get("USER"))
-        
+            global blockchain
+            blockchain = Blockchain(mongodb, os.environ.get("USER"))
+            
         response = await call_next(request)
         return response
 
