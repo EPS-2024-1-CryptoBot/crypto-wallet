@@ -1,8 +1,22 @@
-import hashlib
-
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization, hashes
 from cryptography.hazmat.primitives.asymmetric import rsa, padding
+
+from fastapi import FastAPI
+from mangum import Mangum
+
+app = FastAPI()
+handler = Mangum(app)
+
+@app.get("/")
+def root():
+    return {"RSA Key Generator": "CryptoBot_UnB_2024.1"}
+
+@app.get("/keygen/rsa")
+def rsa_keygen():
+    c = Cryptography()
+    c.generate_keys()
+    return c.keys
 
 
 class Cryptography:
@@ -78,40 +92,6 @@ class Cryptography:
 
 
 if __name__ == "__main__":
+    import uvicorn
 
-    import json
-
-    def hash(block):
-        encoded_block = json.dumps(block, sort_keys=True).encode()
-        return hashlib.sha256(encoded_block).hexdigest()
-
-    c = Cryptography()
-    c.generate_keys()
-
-    msg = {"hello": {"message": "Hello from Lambda!"}, "number": 423}
-    msg_hex = hash(
-        json.dumps(
-            obj=msg,
-            sort_keys=True,
-        )
-    )
-
-    sig = c.sign(msg_hex, c.keys.get("private_key"))
-
-    with open("keys.json", "w") as f:
-        f.write(
-            json.dumps(
-                {"data": {"normal": msg, "hex": msg_hex, "sig": sig}, "keys": c.keys}
-            )
-        )
-
-    with open("keys.json", "r") as f:
-        file = json.loads(f.read())
-        # c.load_keys(
-        #     public_key=file["keys"]["public_key"],
-        #     private_key=file["keys"]["private_key"]
-        # )
-        v = c.verify_signature(
-            file["data"]["hex"], file["data"]["sig"], file["keys"]["public_key"]
-        )
-        print(v)
+    uvicorn.run(app, host="0.0.0.0", port=9000, log_level="info")
