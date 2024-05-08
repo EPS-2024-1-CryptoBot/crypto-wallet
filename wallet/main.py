@@ -1,7 +1,5 @@
-import json
 import os
 
-import requests
 from blockchain import Blockchain
 from encryption import Cryptography
 from fastapi import FastAPI, Request
@@ -25,29 +23,32 @@ included_routes = [
     "/get_balance",
 ]
 
+
 class MiddleWare(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         global included_routes
         if request.url.path in included_routes:
-            print(request.url.path=="/docs")
+            print(request.url.path == "/docs")
             try:
                 user = request.query_params.get("user")
                 set_user(user)
             except:
-                return JSONResponse({"message": f"User can't be {type(user)} type", "required_query_param": "user"}, status_code=400)
+                return JSONResponse(
+                    {
+                        "message": f"User can't be {type(user)} type",
+                        "required_query_param": "user",
+                    },
+                    status_code=400,
+                )
 
             global blockchain
             blockchain = Blockchain(mongodb, os.environ.get("USER"))
-            
+
         response = await call_next(request)
         return response
 
+
 app.add_middleware(MiddleWare)
-
-
-class User(BaseModel):
-    name: str
-    age: int
 
 
 class Transaction(BaseModel):
@@ -63,55 +64,45 @@ def read_root():
     return {"WalletAPI": "CryptoBot_UnB_2024.1"}
 
 
-@app.get("/search")
-def search(query: str):
-    return {"Search": "You searched for {query}".format(query=query)}
-
-
-@app.get("/home")
-def home():
-    return {"Welcome Home!": "You are always welcome here."}
-
-
-@app.get("/google")
-def google():
-    url = "https://google.com.br"
-    r = requests.get(url)
-    print("html:", r.text)
-    return {"statusCode": 200, "body": json.dumps("Hello from Lambda!")}
-
-
-@app.post("/upload")
-def upload(user: User):
-    print(user)
-    db = MongoConnector(os.environ.get("MONGO_URI"))
-    dados = dict(user)
-    db.insert_data(dict(user))
-
-    return {"status": 200, "message": "Data uploaded successfully!", "data": dados}
-
 ## BLOCKCHAIN
 
+
 def set_user(user: str):
+    """
+    This function sets the user in the environment variable and in the blockchain object.
+    """
     os.environ["USER"] = user
     blockchain.user = user
 
+
 @app.get("/get_chain")
-def get_chain(user: str):
+def get_chain():
+    """
+    This endpoint retrieves the blockchain of an specific user.
+    """
     blockchain.retrieve_blockchain()
     response = {"chain": blockchain.chain, "length": len(blockchain.chain)}
     return JSONResponse(content=response, status_code=200)
 
 
 @app.post("/add_transaction")
-def add_transaction(transaction: Transaction, user: str):
+def add_transaction(
+    transaction: Transaction,
+):
+    """
+    This endpoint adds a transaction to the blockchain.
+    """
     transaction_dict = dict(transaction)
     blockchain_users = blockchain.retrieve_users_in_chain()
 
     sender_balance = get_balance("durso")  # TROCAR USER HARD CODED
     if sender_balance < transaction_dict["amount"]:
         return JSONResponse(
-            content={"message": "Insufficient balance.", "Saldo:": sender_balance},
+            content={
+                "message": "Insufficient balance.",
+                "user": blockchain.user,
+                "balance:": sender_balance,
+            },
             status_code=400,
         )
 
@@ -134,18 +125,12 @@ def add_transaction(transaction: Transaction, user: str):
 
 
 @app.get("/mine_block")
-def mine_block(user: str):
+def mine_block():
+    """
+    This endpoint mines a block in the blockchain.
+    """
     blockchain.sync_chain()  # sync the chain before mining
     blockchain.retrieve_blockchain()  # retrieve the chain
-
-    """ 
-    Commented code below is the old way of validating the chain.
-    Right now, the chain is being validated before mining.
-    """
-    # is_valid = blockchain.is_chain_valid()
-    # if not is_valid:
-    #     invalid_block_index = blockchain.get_invalid_block_index()
-    #     blockchain.revalidate_chain(invalid_block_index)
 
     previous_block = blockchain.get_previous_block()
     previous_proof = previous_block["proof"]
@@ -161,7 +146,7 @@ def mine_block(user: str):
 
 
 @app.get("/validate_chain")
-def validate_chain(user: str):
+def validate_chain():
     """
     This endpoint validates the blockchain.
     """
@@ -178,8 +163,8 @@ def validate_chain(user: str):
 
 
 @app.get("/get_balance")
-def get_balance(user: str):
-    return blockchain.get_balance(os.environ.get("USER"))
+def get_balance():
+    return blockchain.get_balance(blockchain.user)
 
 
 if __name__ == "__main__":
