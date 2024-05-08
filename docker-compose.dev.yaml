@@ -11,6 +11,7 @@ services:
       - ./wallet:/app
     ports:
       - "8000:8000"
+      - "9000:9000"
     depends_on:
       - mongo
     tty: true
