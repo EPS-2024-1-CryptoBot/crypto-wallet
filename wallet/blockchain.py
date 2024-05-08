@@ -2,7 +2,6 @@ import datetime
 import hashlib
 import json
 
-import requests
 from encryption import Cryptography
 
 mongo_paths = {
