@@ -95,7 +95,7 @@ def add_transaction(
     transaction_dict = dict(transaction)
     blockchain_users = blockchain.retrieve_users_in_chain()
 
-    sender_balance = get_balance("durso")  # TROCAR USER HARD CODED
+    sender_balance = get_balance(blockchain.user)
     if sender_balance < transaction_dict["amount"]:
         return JSONResponse(
             content={
