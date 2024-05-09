@@ -28,7 +28,6 @@ class MiddleWare(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         global included_routes
         if request.url.path in included_routes:
-            print(request.url.path == "/docs")
             try:
                 user = request.query_params.get("user")
                 set_user(user)
@@ -95,7 +94,7 @@ def add_transaction(
     transaction_dict = dict(transaction)
     blockchain_users = blockchain.retrieve_users_in_chain()
 
-    sender_balance = get_balance(blockchain.user)
+    sender_balance = blockchain.get_balance(blockchain.user)
     if sender_balance < transaction_dict["amount"]:
         return JSONResponse(
             content={
