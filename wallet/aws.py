@@ -6,5 +6,5 @@ def retrieve_parameter(parameter_name):
     return response['Parameter']['Value']
 
 if __name__ == "__main__":
-parameter_value = retrieve_parameter('your-parameter-name')
-print(parameter_value)
+    parameter_value = retrieve_parameter('your-parameter-name')
+    print(parameter_value)
