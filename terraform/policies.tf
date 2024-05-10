@@ -22,6 +22,14 @@ resource "aws_iam_policy" "wallet_api_policy" {
                     ],
                     "Resource": "*"
                 },
+                {
+                    "Effect": "Allow",
+                    "Action": "ssm:GetParameter",
+                    "Resource": [
+                        "arn:aws:ssm:us-east-1:381492146586:parameter/BACKEND_PUB_K",
+                        "arn:aws:ssm:us-east-1:381492146586:parameter/BACKEND_PVT_K"
+                    ]
+                }
             ]
         }
     )
