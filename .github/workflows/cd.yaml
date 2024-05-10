@@ -43,6 +43,8 @@ jobs:
       - name: Deploy
         env:
             TF_VAR_MONGO_URI: ${{ secrets.MONGO_URI }}
+            TF_VAR_BACKEND_PUB_K: ${{ secrets.BACKEND_PUB_K }}
+            TF_VAR_BACKEND_PVT_K: ${{ secrets.BACKEND_PVT_K }}
             TF_VAR_environment: prod
         run: |
           make tf-init
