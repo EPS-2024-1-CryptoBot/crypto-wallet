@@ -8,10 +8,12 @@ from pydantic import BaseModel
 from fastapi import FastAPI
 from mangum import Mangum
 
+from aws import retrieve_parameter
+
 app = FastAPI()
 handler = Mangum(app)
-backend_pvt_k = os.environ.get("BACKEND_PVT_K")
-backend_pub_k = os.environ.get("BACKEND_PUB_K")
+backend_pvt_k = os.environ.get("BACKEND_PVT_K") | retrieve_parameter("BACKEND_PVT_K")
+backend_pub_k = os.environ.get("BACKEND_PUB_K") | retrieve_parameter("BACKEND_PUB_K")
 
 class Encryption(BaseModel):
     message: str
