@@ -5,6 +5,15 @@ variable "MONGO_URI" {
     sensitive = true
 }
 
+variable "BACKEND_PVT_K" {
+    type = string
+    sensitive = true
+}
+variable "BACKEND_PUB_K" {
+    type = string
+    sensitive = true
+}
+
 variable "environment" {
     type = string
     sensitive = false
