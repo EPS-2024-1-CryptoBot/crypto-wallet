@@ -116,7 +116,7 @@ class Blockchain:
             hash_operation = hashlib.sha256(
                 str(new_proof**2 - previous_proof**2).encode()
             ).hexdigest()
-            if hash_operation.startswith("00f00"):
+            if hash_operation.startswith("0000"):
                 check_proof = True
             else:
                 new_proof += 1
@@ -139,7 +139,7 @@ class Blockchain:
             hash_operation = hashlib.sha256(
                 str(proof**2 - previous_proof**2).encode()
             ).hexdigest()
-            if not hash_operation.startswith("00f00"):
+            if not hash_operation.startswith("0000"):
                 return False
 
             for transaction in block["transactions"]:
@@ -213,7 +213,7 @@ class Blockchain:
             hash_operation = hashlib.sha256(
                 str(proof**2 - previous_proof**2).encode()
             ).hexdigest()
-            if hash_operation[:5] != "00f00":
+            if hash_operation[:5] != "0000":
                 return block_index
             for transaction in block["transactions"]:
                 transaction_hex = self.hash(

@@ -7,7 +7,7 @@ resource "aws_lambda_function" "terraform_lambda_func" {
     runtime                        = "python3.8"
     depends_on                     = [aws_iam_role_policy_attachment.Wallet_API_Attach]
     source_code_hash               = base64sha256(aws_s3_object.file_upload.key)
-    timeout                        = 10
+    timeout                        = 30
 
     environment {
         variables = {
