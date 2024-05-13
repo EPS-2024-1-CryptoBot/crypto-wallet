@@ -96,7 +96,6 @@ class Blockchain:
         response = {
             "user": self.user,
             "chain": self.chain,
-            "keys": self.encryption.keys,
         }
         if previous_hash == "0":  # Genesis block
             self.mongo_conn.insert_data(*mongo_paths["blockchain"], response)
@@ -240,7 +239,6 @@ class Blockchain:
         response = {
             "user": self.user,
             "chain": self.chain,
-            "keys": self.encryption.keys,
         }
         self.mongo_conn.update_data_with_lock(
             *mongo_paths["blockchain"], {"user": self.user}, response
@@ -261,7 +259,6 @@ class Blockchain:
                     response = {
                         "user": self.user,
                         "chain": self.chain,
-                        "keys": self.encryption.keys,
                     }
                     self.mongo_conn.update_data_with_lock(
                         *mongo_paths["blockchain"], {"user": self.user}, response
