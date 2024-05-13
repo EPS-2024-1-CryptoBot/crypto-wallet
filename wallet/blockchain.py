@@ -3,6 +3,7 @@ import hashlib
 import json
 
 from encryption import Cryptography
+from postgres_conn import PostgresConnector
 
 mongo_paths = {
     "blockchain": ["cbu_crypto", "blockchain"],
@@ -15,6 +16,8 @@ class Blockchain:
         self.mongo_conn = mongo_conn
         self.user = user
         self.encryption = Cryptography()
+        self.psql = PostgresConnector()
+        self.psql.establish_connection()
 
         self.retrieve_user_keys()
         self.retrieve_blockchain()
@@ -26,13 +29,12 @@ class Blockchain:
             self.create_block(proof=1, previous_hash="0")  # Genesis block
 
     def retrieve_user_keys(self):
-        user_keys = self.mongo_conn.retrieve_data(
-            *mongo_paths["blockchain"], {"user": self.user}
-        )
+        user_keys = self.psql.execute_query(f"SELECT public_key, private_key FROM \"user\" WHERE firebase_uid = '{self.user}'")
         if user_keys != []:
-            user_keys = user_keys.pop().get("keys", [])
+            __public_key, private_encrypted_key = user_keys.pop()
+            __private_key = self.encryption.retrieve_pvk(pvk_chunks=private_encrypted_key)
             self.encryption.load_keys(
-                user_keys.get("public_key"), user_keys.get("private_key")
+                public_key=__public_key, private_key=__private_key
             )
 
     def retrieve_users_in_chain(self):
