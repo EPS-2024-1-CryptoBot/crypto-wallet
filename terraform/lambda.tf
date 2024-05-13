@@ -12,6 +12,10 @@ resource "aws_lambda_function" "terraform_lambda_func" {
     environment {
         variables = {
             MONGO_URI = var.MONGO_URI
+            PG_USER = var.PG_USER
+            PG_PASS = var.PG_PASS
+            PG_HOST = var.PG_HOST
+            PG_DB = var.PG_DB
         }
     }
 }

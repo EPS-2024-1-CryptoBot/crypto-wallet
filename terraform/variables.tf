@@ -5,13 +5,29 @@ variable "MONGO_URI" {
     sensitive = true
 }
 
-variable "BACKEND_PVT_K" {
+variable "PG_USER" {
     type = string
     sensitive = true
 }
-variable "BACKEND_PUB_K" {
+
+variable "PG_PASS" {
     type = string
     sensitive = true
+}
+
+variable "PG_HOST" {
+    type = string
+    sensitive = true
+}
+
+variable "PG_DB" {
+    type = string
+    sensitive = true
+}
+
+variable "PG_SSL" {
+    type = string
+    sensitive = false
 }
 
 variable "environment" {
