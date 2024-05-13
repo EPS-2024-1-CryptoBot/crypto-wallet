@@ -163,6 +163,9 @@ def validate_chain():
 
 @app.get("/get_balance")
 def get_balance():
+    """
+    This endpoint retrieves the balance of an specific user.
+    """
     return blockchain.get_balance(blockchain.user)
 
 
