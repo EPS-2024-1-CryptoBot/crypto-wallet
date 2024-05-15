@@ -166,7 +166,10 @@ def get_balance():
     """
     This endpoint retrieves the balance of an specific user.
     """
-    return blockchain.get_balance(blockchain.user)
+    response = {
+        "balance": blockchain.get_balance(blockchain.user),
+    }
+    return JSONResponse(content=response, status_code=200)
 
 
 if __name__ == "__main__":
