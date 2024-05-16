@@ -21,6 +21,7 @@ included_routes = [
     "/mine_block",
     "/validate_chain",
     "/get_balance",
+    "/get_transactions"
 ]
 
 
@@ -171,6 +172,15 @@ def get_balance():
     }
     return JSONResponse(content=response, status_code=200)
 
+
+@app.get("/get_transactions")
+def get_transactions():
+    """
+    This endpoint retrieves the transactions of an specific user.
+    """
+
+    user_transactions = blockchain.get_transactions(blockchain.user)
+    return user_transactions
 
 if __name__ == "__main__":
     import uvicorn
