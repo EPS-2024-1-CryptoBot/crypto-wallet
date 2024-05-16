@@ -284,3 +284,18 @@ class Blockchain:
         }
 
         return valid_chain_metrics
+    
+    def get_transactions(self, user):
+        self.retrieve_blockchain()
+        print(user, self.chain)
+
+        user_transactions = []
+        for block in self.chain:
+            print(1)
+            for transaction in block.get("transactions"):
+                print(transaction)
+                data = transaction.get("transaction")
+                if user == data.get("sender") or user == data.get("receiver"):
+                    user_transactions.append(data)
+
+        return user_transactions
