@@ -5,7 +5,6 @@ on:
   push:
     branches:
       - main
-      - tests
 
 jobs:
   tests:
@@ -34,7 +33,6 @@ jobs:
         run: make sonar
 
   deploy:
-    if: ${{ needs.test-and-coverage.outputs.quality-gate == 'OK' }}
     runs-on: ubuntu-22.04
     needs: tests
 
