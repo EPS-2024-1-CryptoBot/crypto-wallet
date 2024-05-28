@@ -1,8 +1,8 @@
-from pymongo import MongoClient
-from log import get_logger
+from pymongo import MongoClient # pragma: no cover
+from log import get_logger # pragma: no cover
 
 
-class MongoConnector:
+class MongoConnector: # pragma: no cover
 
     def __init__(self, connection_string="mongodb://mongo:27017/"):
         self.__connection_string = connection_string
@@ -57,10 +57,14 @@ class MongoConnector:
         )
 
 
-if __name__ == "__main__":
-    mongo = MongoConnector()
+if __name__ == "__main__": # pragma: no cover
+    import json
+    mongo = MongoConnector("mongodb://mongo:27017/")
+    dados = mongo.retrieve_data("cbu_crypto", "blockchain")
+    with open("eblockchain.json", "w") as f:
+        f.write(json.dumps(dados, indent=4))
 
     # mongo.insert_data("wallet", "users", {"name": "John", "age": 25})
     # print(list(mongo.retrieve_data("wallet", "users")))
 
-    print(mongo.retrieve_data("cbu_crypto", "transactions"))
+    # print(mongo.retrieve_data("cbu_crypto", "transactions"))

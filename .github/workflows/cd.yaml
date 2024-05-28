@@ -5,10 +5,38 @@ on:
   push:
     branches:
       - main
+      - tests
 
 jobs:
-  deploy:
+  tests:
     runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Install Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get -y install make
+
+      - name: Get Coverage
+        run: make coverage
+
+      - name: Setup SonarQube
+        uses: warchant/setup-sonar-scanner@v7
+
+      - name: Upload coverage to SonarCloud
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
+          SONAR_ORGANIZATION: ${{ secrets.SONAR_ORGANIZATION }}
+        run: make sonar
+
+  deploy:
+    if: ${{ needs.test-and-coverage.outputs.quality-gate == 'OK' }}
+    runs-on: ubuntu-22.04
+    needs: tests
 
     steps:
       - name: Checkout code

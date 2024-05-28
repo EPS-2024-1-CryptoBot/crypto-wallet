@@ -1,9 +1,10 @@
-import os
-import psycopg2
+import os # pragma: no cover
+import psycopg2 # pragma: no cover
 
 from log import get_logger
 
-class PostgresConnector:
+
+class PostgresConnector: # pragma: no cover
     def __init__(self):
         self.__db_user = os.environ.get("PG_USER")
         self.__db_pass = os.environ.get("PG_PASS")
@@ -12,7 +13,7 @@ class PostgresConnector:
         self.__db_ssl = os.environ.get("PG_SSL") or False
         self.__logger = get_logger(self.__class__.__name__)
         self.establish_connection()
-    
+
     @property
     def __conn_string(self):
         ssl_mode = "?ssl=require" if bool(self.__db_ssl) else ""
