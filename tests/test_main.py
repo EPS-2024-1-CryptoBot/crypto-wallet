@@ -95,8 +95,17 @@ class Test_Main(unittest.TestCase):
         assert response.status_code == 200
         assert response_data['message'] == 'The blockchain is valid.'
 
+    def test_should_pass_when_transactions_are_retrieved_correctly(self):
+        response = get_transactions()
+        assert response == [{'sender': 'miner', 'receiver': 'EmDpl3ADFfNcuyg2KukjrC8e5Yh1', 'amount': 10}]
+        assert len(response) == 1
+
     def test_should_pass_when_balance_is_retrieved_correctly(self):
-        assert get_balance() == 10
+        response = get_balance()
+        response_data = response.body.decode()
+        response_data = json.loads(response_data)
+        assert response.status_code == 200
+        assert response_data == {'balance': 10}
 
     def test_should_pass_when_block_is_mined(self):
         response = mine_block()
