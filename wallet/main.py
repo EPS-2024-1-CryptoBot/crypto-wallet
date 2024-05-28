@@ -11,9 +11,14 @@ from starlette.middleware.base import BaseHTTPMiddleware
 
 app = FastAPI()
 handler = Mangum(app)
-mongodb = MongoConnector(os.environ.get("MONGO_URI"))
-blockchain = Blockchain(mongodb, os.environ.get("USER"))
-encryption = Cryptography()
+if not os.environ.get("TESTING"): # pragma: no cover
+    mongodb = MongoConnector(os.environ.get("MONGO_URI"))
+    blockchain = Blockchain(mongodb, os.environ.get("USER"))
+    encryption = Cryptography()
+else:
+    mongodb = None
+    blockchain = None
+    encryption = None
 
 included_routes = [
     "/get_chain",
@@ -182,7 +187,7 @@ def get_transactions():
     user_transactions = blockchain.get_transactions(blockchain.user)
     return user_transactions
 
-if __name__ == "__main__":
+if __name__ == "__main__": # pragma: no cover
     import uvicorn
 
     uvicorn.run(app, host="0.0.0.0", port=8000, log_level="info")

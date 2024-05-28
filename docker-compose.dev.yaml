@@ -1,6 +1,26 @@
 services:
 
+  tests:
+    profiles:
+      - tests
+    container_name: wallet_tests
+    build:
+      context: .
+      dockerfile: Dockerfile.tests
+    image: wallet_tests
+    env_file:
+      - ./dev.env
+    environment:
+      BACKEND_PVT_K: "mock"
+      BACKEND_PUB_K: "mock"
+    volumes:
+      - ./wallet:/app/wallet
+      - ./tests:/app/tests
+    tty: true
+
   wallet_api:
+    profiles:
+      - dev
     container_name: wallet_api
     build:
       context: .
@@ -17,11 +37,15 @@ services:
     tty: true
       
   mongo:
+    profiles:
+      - dev
     image: mongo@sha256:4e6a14311567d04fab842b9df6d2b88b8425362632f262da208c97af167df93c
     ports:
       - 27017:27017
 
   mongo-express:
+    profiles:
+      - dev
     image: mongo-express:latest
     ports:
       - 8081:8081

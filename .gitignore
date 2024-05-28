@@ -1,3 +1,8 @@
+.coverage
+.tox
+*.xml
+.scannerwork
+*cache/
 venv
 deps
 .terraform

@@ -1,0 +1,10 @@
+FROM --platform=linux/amd64 python:3.8
+WORKDIR /app
+
+COPY requirements.dev.txt .
+RUN pip install -r requirements.dev.txt
+
+COPY ./wallet ./wallet
+COPY ./tests ./tests
+
+ENV PYTHONPATH ${PYTHONPATH}:/app/wallet

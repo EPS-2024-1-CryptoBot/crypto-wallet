@@ -9,3 +9,6 @@ cryptography==35.0.0
 cffi==1.16.0
 boto3
 psycopg2
+pytest 
+pytest-cov 
+pytest-xdist

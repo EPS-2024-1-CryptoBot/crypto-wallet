@@ -9,6 +9,6 @@ logging.basicConfig(
 )
 
 
-def get_logger(name):
+def get_logger(name): # pragma: no cover
     logger = logging.getLogger(name)
     return logger
