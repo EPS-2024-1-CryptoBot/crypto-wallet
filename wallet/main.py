@@ -2,11 +2,11 @@ import os
 
 from blockchain import Blockchain
 from encryption import Cryptography
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Query
 from fastapi.responses import JSONResponse
 from mangum import Mangum
 from mongo_connector import MongoConnector
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from starlette.middleware.base import BaseHTTPMiddleware
 
 app = FastAPI()
@@ -57,8 +57,8 @@ app.add_middleware(MiddleWare)
 
 
 class Transaction(BaseModel):
-    receiver: str
-    amount: float
+    receiver: str = Field(..., example="brasil")
+    amount: float = Field(..., example="5")
 
 
 @app.get("/")
@@ -80,22 +80,45 @@ def set_user(user: str):
     blockchain.user = user
 
 
-@app.get("/get_chain")
-def get_chain():
+@app.get("/get_chain", tags=["Blockchain"])
+def get_chain(user : str = Query(None, description="User to get the blockchain from", example="fKhB1D6BBNMQpoGw7ogSwp4U8Z62")):
     """
-    This endpoint retrieves the blockchain of an specific user.
+    ```
+    Retrieves the blockchain of a specific user.
+
+    Query Params:
+        user (str): User to get the blockchain from.
+
+    Returns:
+        JSONResponse: A JSON response containing:
+            - "chain" (list): The blockchain of the specified user.
+            - "length" (int): The length of the blockchain.
+    ```
     """
+
     blockchain.retrieve_blockchain()
     response = {"chain": blockchain.chain, "length": len(blockchain.chain)}
     return JSONResponse(content=response, status_code=200)
 
 
-@app.post("/add_transaction")
+@app.post("/add_transaction", tags=["Blockchain"])
 def add_transaction(
     transaction: Transaction,
+    user : str = Query(None, description="User to get the blockchain from", example="fKhB1D6BBNMQpoGw7ogSwp4U8Z62")
 ):
     """
-    This endpoint adds a transaction to the blockchain.
+    ```
+    Adds a transaction to the blockchain.
+
+    Parameters:
+        transaction (Transaction): The transaction to be added to the blockchain.
+        user (str): User to get the blockchain from.
+
+    Returns:
+        JSONResponse: A JSON response containing:
+            - "message" (str): A message indicating the status of the transaction.
+            - "transaction" (dict): The details of the added transaction.
+    ```
     """
     transaction_dict = dict(transaction)
     blockchain_users = blockchain.retrieve_users_in_chain()
@@ -129,10 +152,20 @@ def add_transaction(
         return JSONResponse(content=response, status_code=400)
 
 
-@app.get("/mine_block")
-def mine_block():
+@app.get("/mine_block", tags=["Blockchain"])
+def mine_block(user : str = Query(None, description="User to get the blockchain from", example="fKhB1D6BBNMQpoGw7ogSwp4U8Z62")):
     """
-    This endpoint mines a block in the blockchain.
+    ```
+    Mines a block in the blockchain.
+
+    Query Params:
+        user (str): User to get the blockchain from.
+
+    Returns:
+        dict: A dictionary containing:
+            - "message" (str): A message indicating the success of mining.
+            - "block" (dict): The mined block details.
+    ```
     """
     blockchain.sync_chain()  # sync the chain before mining
     blockchain.retrieve_blockchain()  # retrieve the chain
@@ -150,10 +183,20 @@ def mine_block():
     return response
 
 
-@app.get("/validate_chain")
-def validate_chain():
+@app.get("/validate_chain", tags=["Blockchain"])
+def validate_chain(user : str = Query(None, description="User to get the blockchain from", example="fKhB1D6BBNMQpoGw7ogSwp4U8Z62")):
     """
-    This endpoint validates the blockchain.
+    ````
+    Validates the blockchain.
+
+    Query Params:
+        user (str): User to get the blockchain from.
+
+    Returns:
+        JSONResponse: A JSON response containing:
+            - "message" (str): A message indicating the validity of the blockchain.
+            - "chain" (list): The blockchain.
+    ````
     """
     blockchain.retrieve_blockchain()
     blockchain.retrieve_transactions()
@@ -167,10 +210,19 @@ def validate_chain():
     return JSONResponse(content=response, status_code=200)
 
 
-@app.get("/get_balance")
-def get_balance():
+@app.get("/get_balance", tags=["Blockchain"])
+def get_balance(user : str = Query(None, description="User to get the blockchain from", example="fKhB1D6BBNMQpoGw7ogSwp4U8Z62")):
     """
-    This endpoint retrieves the balance of an specific user.
+    ````
+    Retrieves the balance of a specific user.
+
+    Query Params:
+        user (str): User to get the blockchain from.
+
+    Returns:
+        JSONResponse: A JSON response containing:
+            - "balance" (float): The balance of the specified user.
+    ````
     """
     response = {
         "balance": blockchain.get_balance(blockchain.user),
@@ -178,10 +230,18 @@ def get_balance():
     return JSONResponse(content=response, status_code=200)
 
 
-@app.get("/get_transactions")
-def get_transactions():
+@app.get("/get_transactions", tags=["Blockchain"])
+def get_transactions(user : str = Query(None, description="User to get the blockchain from", example="fKhB1D6BBNMQpoGw7ogSwp4U8Z62")):
     """
-    This endpoint retrieves the transactions of an specific user.
+    ```
+    Retrieves the transactions of a specific user.
+
+    Query Params:
+        user (str): User to get the blockchain from.
+
+    Returns:
+        JSONResponse: A JSON response containing the transactions of the specified user.
+    ```
     """
 
     user_transactions = blockchain.get_transactions(blockchain.user)
