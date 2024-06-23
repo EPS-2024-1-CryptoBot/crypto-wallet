@@ -97,7 +97,7 @@ class Test_Blockchain(unittest.TestCase):
 
     def test_should_pass_when_blockchain_metrics_are_valid(self):
         self.blockchain.retrieve_blockchain()
-        result = {"length": 1, "blocks": self.blockchain.chain[1:]}
+        result = {"length": 2, "blocks": self.blockchain.chain}
         assert self.blockchain.get_chain_metrics(self.blockchain.chain) == result
     
     def test_should_pass_when_proof_of_work_is_valid(self):

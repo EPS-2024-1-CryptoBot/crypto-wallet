@@ -214,8 +214,6 @@ class Blockchain:
                 )
                 user_chain = user_chain.pop().get("chain", [])
                 metrics = self.get_chain_metrics(user_chain)
-                print('user_chain', user_chain)
-                print('metrics', metrics)
                 if metrics["length"] >= len(self.chain):
                     # print("\nSincronizando blockchain...", user, end='')
                     self.chain = metrics["blocks"]
