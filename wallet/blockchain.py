@@ -214,7 +214,9 @@ class Blockchain:
                 )
                 user_chain = user_chain.pop().get("chain", [])
                 metrics = self.get_chain_metrics(user_chain)
-                if metrics["length"] > len(self.chain):
+                print('user_chain', user_chain)
+                print('metrics', metrics)
+                if metrics["length"] >= len(self.chain):
                     # print("\nSincronizando blockchain...", user, end='')
                     self.chain = metrics["blocks"]
                     response = {
@@ -226,7 +228,7 @@ class Blockchain:
                     )
 
     def get_valid_blocks(self, chain):
-        valid_blocks = []
+        valid_blocks = [chain[0]]
         previous_block = chain[0]
         block_index = 1
         while block_index < len(chain):
