@@ -8,3 +8,7 @@ COPY ./wallet ./wallet
 COPY ./tests ./tests
 
 ENV PYTHONPATH ${PYTHONPATH}:/app/wallet
+
+RUN groupadd -r nonroot && useradd -r -g nonroot appuser
+RUN chown -R appuser:nonroot /app
+USER appuser

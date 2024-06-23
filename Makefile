@@ -63,7 +63,7 @@ lint:
 coverage:
 	docker compose -f docker-compose.dev.yaml --profile tests up tests --build -d
 	docker exec -t wallet_tests bash -c "pytest --cov=wallet"
-	docker exec -t wallet_tests bash -c "pytest --cov-report xml:/coverage.xml --cov=wallet && coverage xml -i"
+	docker exec -t wallet_tests bash -c "pytest --cov-report xml:/app/coverage.xml --cov=wallet && coverage xml -i"
 	docker cp wallet_tests:/app/coverage.xml ./coverage-reports/coverage.xml
 	docker stop wallet_tests
 	docker rm wallet_tests
@@ -86,7 +86,7 @@ sonar:
 ###########################################################
 # DEV
 dev:
-	docker-compose -f docker-compose.dev.yaml --env-file ./dev.env up --profile dev -d --force-recreate
+	docker-compose -f docker-compose.dev.yaml --env-file ./dev.env --profile dev up -d --force-recreate
 	$(MAKE) dev-ports
 	docker exec -it wallet_api python main.py
 clean-build:
