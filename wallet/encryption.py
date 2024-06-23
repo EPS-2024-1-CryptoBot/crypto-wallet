@@ -115,11 +115,16 @@ def encrypt_msg(encrypt: Encryption):
     ```
     """
     c = Cryptography()
-    return {
+    try:
+        return {
         "message": encrypt.message,
         "encrypted_message": c.encrypt(encrypt.message, encrypt.public_key),
-    }
-
+        }
+    except Exception as e:
+        return {
+            "error": str(e),
+            "message": "Check if message has 180 characters or less."
+        }
 
 @app.post("/rsa/decrypt", tags=["RSA Cryptography"])
 def decrypt_msg(decrypt: Decryption):
