@@ -122,7 +122,7 @@ class Blockchain:
             hash_operation = hashlib.sha256(
                 str(new_proof**2 - previous_proof**2).encode()
             ).hexdigest()
-            if hash_operation.startswith("0000"):
+            if hash_operation.startswith("0"):
                 check_proof = True
             else:
                 new_proof += 1
