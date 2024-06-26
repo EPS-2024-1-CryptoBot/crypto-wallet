@@ -28,10 +28,18 @@ class MongoConnector: # pragma: no cover
 
     def insert_data(self, db, collection, document):
         self.switch(db, collection)
-        self.collection.insert_one(document)
-        self.__logger.info(
-            f"SUCCESSFULLY INSERTED DOCUMENT INTO MONGODB IN COLLECTION {collection}"
-        )
+        if collection == 'blockchain':
+            document['_id'] = document['user']
+        try:
+            self.collection.insert_one(document)
+            self.__logger.info(
+                f"SUCCESSFULLY INSERTED DOCUMENT INTO MONGODB IN COLLECTION {collection}"
+            )
+        except Exception as e:
+            self.__logger.error(
+                f"FAILED TO INSERT DOCUMENT INTO MONGODB IN COLLECTION {collection}"
+            )
+            self.__logger.error(f"ERROR: {e}")
 
     def delete_data(self, db, collection, _filter):
         self.switch(db, collection)
@@ -47,6 +55,8 @@ class MongoConnector: # pragma: no cover
 
     def update_data_with_lock(self, db, collection, _filter, update_value):
         self.switch(db, collection)
+        if collection == 'blockchain':
+            update_value['_id'] = update_value['user']
         _filter["locked"] = {"$exists": False}
         self.collection.update_one(_filter, {"$set": {"locked": True}})
         _filter.pop("locked", None)
