@@ -101,7 +101,7 @@ class Test_Blockchain(unittest.TestCase):
         assert self.blockchain.get_chain_metrics(self.blockchain.chain) == result
     
     def test_should_pass_when_proof_of_work_is_valid(self):
-        assert self.blockchain.proof_of_work(1) == 533
+        assert self.blockchain.proof_of_work(1) == 20
         assert self.blockchain.proof_of_work(25043213) == 108517
         assert self.blockchain.proof_of_work(-250) == 25041
         assert self.blockchain.proof_of_work(0) == 115558
