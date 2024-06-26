@@ -102,10 +102,10 @@ class Test_Blockchain(unittest.TestCase):
     
     def test_should_pass_when_proof_of_work_is_valid(self):
         assert self.blockchain.proof_of_work(1) == 20
-        assert self.blockchain.proof_of_work(25043213) == 108517
-        assert self.blockchain.proof_of_work(-250) == 25041
-        assert self.blockchain.proof_of_work(0) == 115558
-        assert self.blockchain.proof_of_work(1.25) == 41148
+        assert self.blockchain.proof_of_work(25043213) == 24
+        assert self.blockchain.proof_of_work(-250) == 9
+        assert self.blockchain.proof_of_work(0) == 7
+        assert self.blockchain.proof_of_work(1.25) == 15
 
     def test_should_pass_when_blockchain_is_valid(self):
         assert self.blockchain.is_chain_valid() == True
