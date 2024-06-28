@@ -18,8 +18,6 @@ services:
       - ./wallet:/app/wallet
       - ./tests:/app/tests
     tty: true
-    networks:
-      - pg-ext-net
 
   wallet_api:
     profiles:
