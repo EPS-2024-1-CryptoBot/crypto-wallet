@@ -11,6 +11,7 @@ services:
     env_file:
       - ./dev.env
     environment:
+      TESTING: "TRUE"
       BACKEND_PVT_K: "mock"
       BACKEND_PUB_K: "mock"
     volumes:
