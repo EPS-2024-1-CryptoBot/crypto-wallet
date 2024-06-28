@@ -18,6 +18,8 @@ services:
       - ./wallet:/app/wallet
       - ./tests:/app/tests
     tty: true
+    networks:
+      - pg-ext-net
 
   wallet_api:
     profiles:
@@ -35,6 +37,8 @@ services:
     depends_on:
       - mongo
     tty: true
+    networks:
+      - pg-ext-net
 
   rsa_api:
     profiles:
@@ -52,6 +56,8 @@ services:
     depends_on:
       - mongo
     tty: true
+    networks:
+      - pg-ext-net
       
   mongo:
     profiles:
@@ -59,6 +65,8 @@ services:
     image: mongo@sha256:4e6a14311567d04fab842b9df6d2b88b8425362632f262da208c97af167df93c
     ports:
       - 27017:27017
+    networks:
+      - pg-ext-net
 
   mongo-express:
     profiles:
@@ -68,3 +76,10 @@ services:
       - 8081:8081
     environment:
       - ME_CONFIG_BASICAUTH=false
+    networks:
+      - pg-ext-net
+
+networks:
+  pg-ext-net:
+    external:
+      name: crypto-backend_pg-net
