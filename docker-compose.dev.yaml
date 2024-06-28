@@ -32,7 +32,23 @@ services:
       - ./wallet:/app
     ports:
       - "8000:8000"
-      - "9000:9000"
+    depends_on:
+      - mongo
+    tty: true
+
+  rsa_api:
+    profiles:
+      - dev
+    container_name: rsa_api
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    env_file:
+      - ./dev.env
+    volumes:
+      - ./wallet:/app
+    ports:
+      - "9001:9001"
     depends_on:
       - mongo
     tty: true

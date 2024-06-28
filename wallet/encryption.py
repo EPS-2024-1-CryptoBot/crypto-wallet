@@ -265,4 +265,4 @@ class Cryptography:
 if __name__ == "__main__": # pragma: no cover
     import uvicorn
 
-    uvicorn.run(app, host="0.0.0.0", port=9000, log_level="info")
+    uvicorn.run(app, host="0.0.0.0", port=9001, log_level="info")

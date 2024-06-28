@@ -92,10 +92,12 @@ dev:
 	docker-compose -f docker-compose.dev.yaml --env-file ./dev.env --profile dev up -d --force-recreate
 	$(MAKE) dev-ports
 	docker exec -it wallet_api python main.py
+	docker exec -it rsa_api python encryption.py
 bigbang:
 	docker-compose -f docker-compose.dev.yaml --env-file ./dev.env --profile dev up -d --force-recreate
 	$(MAKE) dev-ports
 	docker exec -d wallet_api python main.py
+	docker exec -d rsa_api python encryption.py
 clean-build:
 	rm -rf ./deps
 	rm -rf ./lambda_function.zip
